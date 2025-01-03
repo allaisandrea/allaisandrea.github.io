@@ -2,6 +2,8 @@
 layout: default
 title: Home
 ---
-<h1>Hello World!</h1>
-<p> Example math: \(a^2 + b^2 = c^2\) </p>
+# Data from noise
+
+Example math: $$a^2 + b^2 = c^2$$
+
 <img src="flow_matching.png"/>
