@@ -3,9 +3,26 @@
   <head>
     <meta charset="utf-8">
     <title> {{page.title}} </title>
-    <script type="text/javascript" id="MathJax-script" async
-      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+    <script>
+        MathJax = {
+          tex: {
+            tags: 'ams',
+            macros: {
+              cov: ["\\mathrm{cov}\\!\\left[#1,\\,#2\\right]", 2],
+              transp: "\\mathrm{T}",
+              dd: "\\mathrm{d}",
+              ee: "\\mathrm{e}",
+              normal: ["N\\!\\left(#1,\\,#2\\right)", 2],
+              expectation: ["\\mathrm{E}_{#1}\\!\\left[#2\\right]", 2],
+            }
+          }
+        };
     </script>
+    <script type="text/javascript" id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+    </script>
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,700;1,400">
     <link rel="stylesheet" href="/assets/css/style.css" />
   </head>
   <body>

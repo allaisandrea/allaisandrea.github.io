@@ -1,3 +1,45 @@
-* {
-    font-family: sans-serif;
+html {
+    font-family: 'EB Garamond', serif;
+    font-size: 16pt;
+    font-weight: 400;
+    max-width: 7in;
+    line-height: 1.5;
+    margin-left: auto;
+    margin-right: auto;
+    counter-reset: section;
 }
+
+h1 {
+    font-size: 42pt;
+    font-weight: 700;
+}
+
+h2:before {
+    counter-increment: section;
+    content: counter(section) '.';
+    position: absolute;
+    left: 0;
+}
+
+h2 {
+    padding-left: 1.5em;
+    position: relative;
+}
+
+
+p {
+    text-align: justify;
+}
+
+figure {
+    margin-left:0;
+    margin-right:0;
+}
+
+figure img {
+   max-width: 100%;
+   display: block;
+   margin-left: auto;
+   margin-right: auto;
+}
+
