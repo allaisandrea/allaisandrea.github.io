@@ -7,6 +7,12 @@ html {
     margin-left: auto;
     margin-right: auto;
     counter-reset: section;
+    overflow-x: hidden;
+}
+
+body {
+    margin: 0;
+    overflow-x: hidden;
 }
 
 h1 {
