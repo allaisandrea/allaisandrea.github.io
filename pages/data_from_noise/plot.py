@@ -229,6 +229,11 @@ def plot_graphical_models():
         r'$z_{2\Delta t}$',
         r'$z_{3\Delta t}$',
     ]
+    zbar_text = [
+        r'$\bar{z}_{\Delta t}$',
+        r'$\bar{z}_{2\Delta t}$',
+        r'$\bar{z}_{3\Delta t}$',
+    ]
     x_nodes = [
         Node((spacing_x * i, 0), text, 17)
         for i, text in enumerate(x_text)
@@ -236,6 +241,10 @@ def plot_graphical_models():
     z_nodes = [
         Node((spacing_x * (i + 1), 80), text, 17)
         for i, text in enumerate(z_text)
+    ]
+    zbar_nodes = [
+        Node((spacing_x * (i + 1), 80), text, 17)
+        for i, text in enumerate(zbar_text)
     ]
 
     figure, axes = make_graph_figure(np.array([[-20, -20], [310, 100]]))
@@ -248,11 +257,11 @@ def plot_graphical_models():
     figure.savefig("forward_process.png")
 
     figure, axes = make_graph_figure(np.array([[-20, -20], [310, 100]]))
-    for node in x_nodes[:-1] + z_nodes:
+    for node in x_nodes[:-1] + zbar_nodes:
         plot_node(axes, node)
     for node2, node1 in zip(x_nodes[:-1], x_nodes[1:]):
         plot_edge(axes, node1, node2)
-    for node1, node2 in zip(z_nodes, x_nodes[:-1]):
+    for node1, node2 in zip(zbar_nodes, x_nodes[:-1]):
         plot_edge(axes, node1, node2)
     figure.savefig("backward_process.png")
 
