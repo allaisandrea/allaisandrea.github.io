@@ -32,14 +32,12 @@ p {
 }
 
 figure {
-    margin-left:0;
-    margin-right:0;
+    margin: 0;
 }
 
 figure img {
-   max-width: 100%;
-   display: block;
-   margin-left: auto;
-   margin-right: auto;
+    display: block;
+    margin: 0 auto;
+    width: 100%;
 }
 
