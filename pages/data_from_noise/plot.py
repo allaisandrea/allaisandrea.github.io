@@ -97,7 +97,7 @@ def plot_flow(compute_log_p, x_range, n_mesh_t=1024, n_mesh_x=1024):
         width_ratios=[0.1, 0.8, 0.1], dpi=300,
         gridspec_kw={
             'wspace': 0.10, 'left': 0.09, 
-            'right': 0.97, 'top': 0.95, 'bottom': 0.15,
+            'right': 0.97, 'top': 0.95, 'bottom': 0.16,
         },
     )
     axes[0].plot(np.exp(log_p0), x_mesh, c='black')
@@ -105,7 +105,7 @@ def plot_flow(compute_log_p, x_range, n_mesh_t=1024, n_mesh_x=1024):
     axes[0].set_xlim(0, None)
     axes[2].set_xlim(0, None)
     axes[0].set_xlabel("$p(x, 0)$")
-    axes[2].set_xlabel("$p(x, t_{max})$")
+    axes[2].set_xlabel("$p(x, 1)$")
     axes[0].set_xticks([])
     axes[2].set_xticks([])
     axes[0].set_ylabel("$x$")
