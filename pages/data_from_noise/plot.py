@@ -92,14 +92,19 @@ def plot_flow(compute_log_p, x_range, n_mesh_t=1024, n_mesh_x=1024):
     log_p, _ = compute_log_p(t_mesh, x_mesh)
     log_p0, _ = compute_log_p(0, x_mesh)
     log_p1, _ = compute_log_p(1, x_mesh)
-    figure, axes = plt.subplots(
-        1, 3, figsize=(7.0, 4.0), sharey=True,
-        width_ratios=[0.1, 0.8, 0.1], dpi=300,
-        gridspec_kw={
-            'wspace': 0.10, 'left': 0.09, 
-            'right': 0.97, 'top': 0.95, 'bottom': 0.16,
-        },
+    figure = plt.figure(figsize=(7, 5), dpi=300)
+    grid_spec = matplotlib.gridspec.GridSpec(
+            nrows=2, ncols=3, wspace=0.08, hspace=0.08,
+            left=0.09, right=0.98, top=0.98, bottom=0.14,
+            width_ratios=[0.1, 0.8, 0.1],
+            height_ratios=[0.2, 0.8],
     )
+    axes = [None] * 4
+    axes[0] = figure.add_subplot(grid_spec[1, 0])
+    axes[1] = figure.add_subplot(grid_spec[1, 1], sharey=axes[0])
+    axes[2] = figure.add_subplot(grid_spec[1, 2], sharey=axes[0])
+    axes[3] = figure.add_subplot(grid_spec[0, 1], sharex=axes[1])
+
     axes[0].plot(np.exp(log_p0), x_mesh, c='black')
     axes[2].plot(np.exp(log_p1), x_mesh, c='black')
     axes[0].set_xlim(0, None)
@@ -107,6 +112,9 @@ def plot_flow(compute_log_p, x_range, n_mesh_t=1024, n_mesh_x=1024):
     axes[0].set_xlabel("$p(x, 0)$")
     axes[2].set_xlabel("$p(x, 1)$")
     axes[0].set_xticks([])
+    axes[1].yaxis.set_tick_params(labelleft=False)
+    axes[2].yaxis.set_tick_params(labelleft=False)
+    axes[3].xaxis.set_tick_params(labelleft=False)
     axes[2].set_xticks([])
     axes[0].set_ylabel("$x$")
     axes[0].grid()
@@ -121,6 +129,15 @@ def plot_flow(compute_log_p, x_range, n_mesh_t=1024, n_mesh_x=1024):
     axes[1].set_xlabel("$t$")
     figure.align_xlabels(axes)
     return figure, axes
+
+def plot_schedule(axes, alpha, sigma):
+    t_list = np.linspace(0, 1, 128)
+    axes.plot(t_list, alpha(t_list), c='k')
+    axes.plot(t_list, sigma(t_list), c='k', linestyle='--')
+    axes.annotate(r'$\alpha_t$', (0.1, alpha(0.1)), (0, -15), textcoords='offset points')
+    axes.annotate(r'$\sigma_t$', (0.9, sigma(0.9)), (0, -15), textcoords='offset points')
+    axes.grid()
+    axes.set_ylim(0, 1.10)
 
 def plot_diffusion():
     pi1 = 0.8; x1 = -1.0; sigma1 = 0.1
@@ -142,6 +159,7 @@ def plot_diffusion():
             x0=x2, sigma0=sigma2, alpha=alpha, sigma=sigma),
     )
     figure, axes = plot_flow(compute_log_p, x_range=(-3, 3))
+    plot_schedule(axes[3], alpha, sigma)
     rng = np.random.default_rng(0)
     n_sample = 16
     x_0 = np.where(
@@ -156,10 +174,10 @@ def plot_diffusion():
     figure.savefig('diffusion.png')
 
     figure, axes = plot_flow(compute_log_p, x_range=(-3, 3))
+    plot_schedule(axes[3], alpha, sigma)
     t_list, x_list = integrate_flow(
         x_0=scipy.stats.norm.ppf(bin_centers(0, 1.0, 16)),
         lambda_=lambda_, gsq=gsq, compute_log_p=compute_log_p, nt=2048)
-
     axes[1].plot(t_list, x_list, c='white', linewidth=1, alpha=0.5)
     figure.savefig('probability_flow.png')
 
