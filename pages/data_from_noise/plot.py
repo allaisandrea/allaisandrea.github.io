@@ -8,25 +8,6 @@ import matplotlib
 def bin_centers(x0, x1, n):
     return x0 + (np.arange(n) + 0.5) / n * (x1 - x0)
 
-def log_p_and_u_ddpm(x0, sigma0, g):
-    def log_p_and_u(t, x):
-        lam = np.exp(-np.square(g) * t / 2)
-        var = 1 + np.square(lam) * (np.square(sigma0) - 1)
-        log_p = -np.square(x - lam * x0) / (2 * var) - np.log(2 * np.pi * var) / 2
-        grad_log_p = -(x - lam * x0) / var
-        u = -np.square(g) * (x + grad_log_p) / 2
-        return log_p, u
-    return log_p_and_u
-
-    
-def log_p_and_u_fm(x0, sigma0):
-    def log_p_and_u(t, x):
-        std = (1 + (1 - t) * (sigma0 - 1))
-        log_p =  -np.square((x - (1 - t) * x0) / std) / 2 - np.log(2 * np.pi * np.square(std)) / 2
-        u =  -(x0 + (sigma0 - 1) * x) / std
-        return log_p, u
-    return log_p_and_u
-
 def normal_log_p_and_score(x, mu, sigma):
     log_p = -np.sum(np.square((x - mu) / sigma) / 2, axis=-1) - np.log(2 * np.pi * np.square(sigma)) / 2
     score = -(x - mu) / np.square(sigma)
@@ -41,52 +22,76 @@ def combine_log_p_and_score(pi1, log_p1, score1, pi2, log_p2, score2):
         score = (w1[..., None] * score1 + w2[..., None] * score2) / (w1[..., None] + w2[..., None])
         return log_p, score
 
+def make_conditional_log_p_function(
+        x0, sigma0, alpha, sigma):
+    def compute_log_p(t, x):
+        alpha_t = alpha(t)
+        sigma_t = sigma(t)
+        var = (alpha_t * sigma0) ** 2 + sigma_t ** 2
+        log_p = (-np.square(x - alpha_t * x0) / (2 * var) -
+                 np.log(2 * np.pi * var) / 2)
+        d_log_p = - (x - alpha_t * x0) / var
+        return log_p, d_log_p
 
-def combine_log_p_and_u(pi1, log_p_and_u_1, pi2, log_p_and_u_2):
-    def log_p_and_u(t, x):
-        z1, u1 = log_p_and_u_1(t, x)
-        z2, u2 = log_p_and_u_2(t, x)
+    return compute_log_p
+
+def combine_log_p_functions(pi1, log_p1, pi2, log_p2):
+    def compute_log_p(t, x):
+        z1, d_log_p1 = log_p1(t, x)
+        z2, d_log_p2 = log_p2(t, x)
         z1 = z1 + np.log(pi1 / (pi1 + pi2))
         z2 = z2 + np.log(pi2 / (pi1 + pi2))
         w1 = np.exp(-np.maximum(z2 - z1, 0))
         w2 = np.exp(-np.maximum(z1 - z2, 0))
-        log_p = np.maximum(z1, z2) + np.log(w1 + w2)
-        u = (w1 * u1 + w2 * u2) / (w1 + w2)
-        return log_p, u
-    return log_p_and_u
+        log_p =  np.maximum(z1, z2) + np.log(w1 + w2)
+        d_log_p = (w1 * d_log_p1 + w2 * d_log_p2) / (w1 + w2)
+        return log_p, d_log_p
+    return compute_log_p
 
+def make_sde_params(alpha, d_alpha, sigma, d_sigma):
+    def lambda_(t):
+        return - d_alpha(t) / alpha(t)
 
-def integrate_u(log_p_and_u: Callable[[float, np.ndarray], np.ndarray], x_0: np.ndarray, t_max: float, nt: int):
-    dt = t_max / nt
-    t_list = [t_max]
+    def gsq(t):
+        return  2 * sigma(t) ** 2 * (d_sigma(t) / sigma(t) -
+                                     d_alpha(t) / alpha(t))
+    return lambda_, gsq
+  
+def integrate_flow(x_0, lambda_, gsq, compute_log_p, nt):
+    dt = 1 / nt
+    t_list = [1]
     x_list = [x_0.copy()]
     for i in range(nt, 0, -1):
-        t_i = t_max * i / nt
-        _, u_i = log_p_and_u(t_i, x_list[-1])
-        x_list.append(x_list[-1] - u_i * dt)
-        t_list.append(t_max * (i - 1) / nt)
+        t_i = (i - 0.5) / nt
+        _, d_log_p = compute_log_p(t_i, x_list[-1])
+        x_list.append(x_list[-1] * (1 + lambda_(t_i) * dt) + 
+                      gsq(t_i) * d_log_p / 2 * dt)
+        t_list.append((i - 1) / nt)
     return np.array(t_list), np.array(x_list)
 
-def sample_diffusion(x_0, g, t_max, nt, rng):
+def sample_diffusion(x_0, lambda_, gsq, nt, rng):
     z = rng.normal(size=(nt, len(x_0)))
-    dt = t_max / nt
+    dt = 1 / nt
     t_list = [0]
     x_list = [x_0]
     for i in range(nt):
-        t_list.append((i + 1) * t_max / nt)
-        x_list.append(x_list[-1] * (1 - np.square(g) * dt / 2) + g * np.sqrt(dt) * z[i])
+        t = t_list[-1] + 0.5 * dt
+        x_list.append(
+            x_list[-1] * (1 - lambda_(t) * dt) +
+            np.sqrt(gsq(t)) * np.sqrt(dt) * z[i])
+        t_list.append((i + 1) / nt)
     return np.array(t_list), np.array(x_list)
 
 
-def plot_flow(log_p_and_u, x_range, t_max, n_mesh_t=1024, n_mesh_x=1024):
-    t_range = [0, t_max]
+def plot_flow(compute_log_p, x_range, n_mesh_t=1024, n_mesh_x=1024):
+    t_range = [0, 1]
     t_mesh = bin_centers(*t_range, n_mesh_t)
     x_mesh = bin_centers(*x_range, n_mesh_x)
     t_mesh = t_mesh[None, :]
     x_mesh = x_mesh[:, None]
-    log_p, _ = log_p_and_u(t_mesh, x_mesh)
-    log_p0, _ = log_p_and_u(0, x_mesh)
-    log_p1, _ = log_p_and_u(t_max, x_mesh)
+    log_p, _ = compute_log_p(t_mesh, x_mesh)
+    log_p0, _ = compute_log_p(0, x_mesh)
+    log_p1, _ = compute_log_p(1, x_mesh)
     figure, axes = plt.subplots(
         1, 3, figsize=(7.0, 4.0), sharey=True,
         width_ratios=[0.1, 0.8, 0.1], dpi=300,
@@ -120,12 +125,23 @@ def plot_flow(log_p_and_u, x_range, t_max, n_mesh_t=1024, n_mesh_x=1024):
 def plot_diffusion():
     pi1 = 0.8; x1 = -1.0; sigma1 = 0.1
     pi2 = 0.2; x2 = +2.0; sigma2 = 0.1
-    t_max = 3.7
-    log_p_and_u = combine_log_p_and_u(
-        pi1, log_p_and_u_ddpm(x0=x1, sigma0=sigma1, g=1.0),
-        pi2, log_p_and_u_ddpm(x0=x2, sigma0=sigma2, g=1.0),
+    # alpha = lambda t: 1 - t
+    # d_alpha = lambda t: -1
+    # sigma = lambda t: t
+    # d_sigma = lambda t: 1
+    alpha = lambda t : np.cos(np.pi * t / 2)
+    d_alpha = lambda t : -np.pi / 2 * np.sin(np.pi * t /2)
+    sigma = lambda t: np.sin(np.pi * t /  2)
+    d_sigma = lambda t: np.pi / 2 * np.cos(np.pi * t / 2)
+    lambda_, gsq = make_sde_params(alpha, d_alpha, sigma, d_sigma)
+
+    compute_log_p = combine_log_p_functions(
+        pi1, make_conditional_log_p_function(
+            x0=x1, sigma0=sigma1, alpha=alpha, sigma=sigma),
+        pi2, make_conditional_log_p_function(
+            x0=x2, sigma0=sigma2, alpha=alpha, sigma=sigma),
     )
-    figure, axes = plot_flow(log_p_and_u, x_range=(-3, 3), t_max=t_max)
+    figure, axes = plot_flow(compute_log_p, x_range=(-3, 3))
     rng = np.random.default_rng(0)
     n_sample = 16
     x_0 = np.where(
@@ -133,31 +149,19 @@ def plot_diffusion():
         rng.normal(x1, sigma1, size=n_sample),
         rng.normal(x2, sigma2, size=n_sample)
     )
-    t_list, x_list = sample_diffusion(x_0, t_max=t_max, nt=8192, g=1.0, rng=rng)
+    t_list, x_list = sample_diffusion(
+            x_0, lambda_=lambda_, gsq=gsq,
+            nt=8192, rng=rng)
     axes[1].plot(t_list, x_list, c='white', linewidth=0.5, alpha=0.5)
     figure.savefig('diffusion.png')
 
-    figure, axes = plot_flow(log_p_and_u, x_range=(-3, 3), t_max=t_max)
-    t_list, x_list = integrate_u(
-        log_p_and_u,
-        scipy.stats.norm.ppf(bin_centers(0, 1.0, 16)),
-        t_max, 2048)
+    figure, axes = plot_flow(compute_log_p, x_range=(-3, 3))
+    t_list, x_list = integrate_flow(
+        x_0=scipy.stats.norm.ppf(bin_centers(0, 1.0, 16)),
+        lambda_=lambda_, gsq=gsq, compute_log_p=compute_log_p, nt=2048)
 
     axes[1].plot(t_list, x_list, c='white', linewidth=1, alpha=0.5)
     figure.savefig('probability_flow.png')
-
-    log_p_and_u = combine_log_p_and_u(
-        pi1, log_p_and_u_fm(x0=x1, sigma0=sigma1),
-        pi2, log_p_and_u_fm(x0=x2, sigma0=sigma2),
-    )
-    figure, axes = plot_flow(log_p_and_u, x_range=(-3, 3), t_max=1.0)
-    t_list, x_list = integrate_u(
-        log_p_and_u,
-        scipy.stats.norm.ppf(bin_centers(0, 1.0, 16)),
-        1.0, 2048)
-
-    axes[1].plot(t_list, x_list, c='white', linewidth=1, alpha=0.5)
-    figure.savefig('flow_matching.png')
 
 def plot_p_and_score():
     n_x0 = 384; n_x1 = 256
@@ -273,6 +277,6 @@ plt.rcParams["mathtext.fontset"] = 'cm'
 plt.rcParams["text.usetex"] = False
 plt.rcParams["lines.linewidth"] = 1.5
 
-# plot_diffusion()
-# plot_p_and_score()
+plot_diffusion()
+plot_p_and_score()
 plot_graphical_models()
