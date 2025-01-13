@@ -1,11 +1,11 @@
 ---
 layout: default
-title: Data from noise
+title: Diffusion
 ---
 
-# Data from noise
+# Diffusion
 
-## Diffusion
+## Forward process
 
 The goal of generative modeling is to map a random variable with a known and
 simple distribution (<i>e.g.</i> the normal distribution), to a random
@@ -87,7 +87,7 @@ overlayed as white lines are 16 samples from the process.
 <img src="diffusion.png" alt="One-dimensional example of diffusion process" style="max-width:7in"/>
 </figure>
 
-## Reverse diffusion
+## Reverse process
 
 Remarkably, the joint distribution of $$x_t$$ specified by the diffusion process
 can also be obtained in reverse, <i>i.e.</i> according to the graphical
@@ -130,7 +130,7 @@ probability, and drives the reverse diffusion process there.  The practical use
 of reverse diffusion to sample from the data distribution depends on the
 ability to evaluate the score function efficiently.
 
-## Score matching -- denoising autoencoder
+## Denoising score matching
 
 An efficient objective can be specified to learn a parametric approximation
 $$s_\theta(x, t)$$ to the score function $$\nabla \log p(x, t)$$. The objective is
