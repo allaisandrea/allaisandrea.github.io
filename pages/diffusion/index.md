@@ -184,6 +184,10 @@ figure below:
 <img src="probability_flow.png" alt="Example of proability flow reverse process" style="max-width:7in"/>
 </figure>
 
+This method of sampling the reverse process is more efficient than the
+stochastic one, and is amenable to distillation. However, it usually yields
+samples of lower quality, as measured by FID and other metrics.
+
 ## References
 
 1.  <b>Anderson (1982), Reverse-time diffusion equation models.</b>
@@ -215,10 +219,12 @@ figure below:
    flow ODE is introduced.
 
 1. <b>Lipman <i>et al.</i> (2023), Flow Matching for Generative Modeling</b>.
-   In this paper they arrive to the probability flow ODE through a fairly
-   original path, but their method is entirely equivalent to chosing $$\alpha_t =
-   1 - t$$ and $$\sigma_t = t$$. This choice differs from most of the literature,
-   and they claim it yields better FID on ImageNet. Their training objective is
-   also essentially equivalent to score matching, but they claim that their
-   particular choice of $$\alpha$$ and $$\sigma$$ makes for an easier
-   optimization.
+   This paper presents a fairly original derivation of the probability flow
+ODE and the score-matching objective. The paper is a bit ambiguous on the
+extent to which their method differs from previous literature. The method
+is in fact entirely equivalent to chosing a linear form for $$\alpha_t$$
+and $$\sigma_t$$. This choice differs from most of the literature, and they
+claim it yields better FID on ImageNet. The training objective is also
+essentially equivalent to denoising score matching, except that it includes
+the entire RHS of the flow ODE, instead of just the score. This choice of
+schedule and objective supposedly makes for an easier optimization.
