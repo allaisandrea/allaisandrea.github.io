@@ -1,0 +1,48 @@
+html {
+    font-family: 'Helvetica', 'Arial', 'sans-serif';
+    max-width: 7in;
+    line-height: 1.5;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+a.mailto {
+    display: inline-block;
+    width: 20em;
+    height: 3em;
+    background-color: SteelBlue;
+    color: white;
+    line-height: 3em;
+    text-align: center;
+    border-radius: 0.5em;
+    text-decoration: none;
+}
+
+input.signature {
+    font-family: 'Helvetica', 'Arial', 'sans-serif';
+    height: 3em;
+    width: 20em;
+    padding-left: 0.75em;
+}
+
+button.clipboard {
+    background-color: white;
+    border: none;
+    width: 3em;
+}
+
+button.clipboard:hover {
+    background-color: LightGray;
+}
+
+button.clipboard:active {
+    background-color: DarkGray;
+}
+
+button.clipboard img {
+    width: 100%;
+}
+
+span.label {
+    font-weight: 600;
+}
