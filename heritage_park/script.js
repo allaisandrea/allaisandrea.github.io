@@ -1,5 +1,4 @@
-// const address = "Ed.Lauing@CityofPaloAlto.org;Pat.Burt@CityofPaloAlto.org;George.Lu@CityofPaloAlto.org;Julie.LythcottHaims@CityofPaloAlto.org;Keith.Reckdahl@CityofPaloAlto.org;Greer.Stone@CityofPaloAlto.org;Vicki.Veenker@CityofPaloAlto.org"
-const address = "allais.andrea@gmail.com"
+const address = "Ed.Lauing@CityofPaloAlto.org;Pat.Burt@CityofPaloAlto.org;George.Lu@CityofPaloAlto.org;Julie.LythcottHaims@CityofPaloAlto.org;Keith.Reckdahl@CityofPaloAlto.org;Greer.Stone@CityofPaloAlto.org;Vicki.Veenker@CityofPaloAlto.org"
 const cc_address = "allais.andrea@gmail.com";
 const subject = "The new HVAC in Heritage Park is too loud"
 const body = `Dear Councilmember,
