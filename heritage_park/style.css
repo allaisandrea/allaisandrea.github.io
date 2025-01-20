@@ -25,6 +25,10 @@ input.signature {
     padding-left: 0.75em;
 }
 
+p {
+    overflow-wrap: break-word;
+}
+
 button.clipboard {
     background-color: white;
     border: none;
