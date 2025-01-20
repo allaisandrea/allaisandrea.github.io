@@ -2,7 +2,7 @@ const address = "Ed.Lauing@CityofPaloAlto.org;Pat.Burt@CityofPaloAlto.org;George
 const cc_address = "allais.andrea@gmail.com";
 const subject = "The new HVAC in Heritage Park is too loud"
 const body = `Dear Councilmember,
-I am a frequent user of the Heritage Park playground. The HVAC system of the newly renovated Roth building has been placed right next to the playground. It produces a constant, loud humming noise that makes for a rather unpleasant permanence. I hope that the Council can look into this nuisance: it is affecting many residents, especially children. Unless the noise is eliminated or drastically reduced, this cherished public space will be permanently degraded.
+I am a frequent user of the Heritage Park playground. The HVAC system of the newly renovated Roth building has been placed right next to the playground, and it produces a constant, very loud humming noise. I hope that the Council can look into this nuisance: it is affecting many residents, especially children. Unless the noise is eliminated or drastically reduced, this cherished public space will be permanently degraded.
 Best Regards`
 let signature = ""
 
