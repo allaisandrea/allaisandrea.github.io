@@ -1,6 +1,62 @@
 ---
 layout: default
 title: Diffusion
+references:
+  - tag: anderson_1982
+    authors: Anderson
+    title: Reverse-time diffusion equation models
+    year: 1982
+    notes: >
+      First derivation of the stochastic differential equation that describes
+      the reverse diffusion process.
+  - tag: vincent_2011
+    authors: Vincent
+    title: A Connection Between Score Matching and Denoising Autoencoders.
+    year: 2011
+  - tag: sohl_dickstein_2015
+    authors: Sohl-Dickstein <i>et al.</i>
+    title: Deep Unsupervised Learning using Nonequilibrium Thermodynamics
+    year: 2015
+    notes: >
+      First time learning to reverse the diffusion process. It does not use the
+      language of SDEs and is not aware of the connection to score matching,
+      but the substance is the same as what is described here.
+  - tag: song_2020
+    authors: Song, Ermon
+    title: Generative Modeling by Estimating Gradients of the Data Distribution
+    year: 2020
+    notes: >
+      First time the lanuage of SDEs is applied to the problem, and the
+      connection to score matching is exploited. Interesting discussion on how
+      the noise in score matching improves learning stability and the coverage
+      of multiple distribution modes.
+  - tag: ho_2020
+    authors: Ho <i>et al.</i>
+    title: Denoising Diffusion Probabilistic Models
+    year: 2020
+    notes: >
+      Contemporanous to the previous paper, and makes roughly the
+      same points.
+  - tag: song_2021
+    authors: Song <i>et al.</i>
+    title: Score-Based Generative Modeling through Stochastic Differential Equations
+    year: 2021
+    notes: >
+      First time the probability flow ODE is introduced.
+  - tag: lipmap_2023
+    authors: Lipman <i>et al.</i> 
+    title: Flow Matching for Generative Modeling
+    year: 2023
+    notes: >
+      This paper presents a fairly original derivation of the probability flow
+      ODE and the score-matching objective. The paper is a bit ambiguous on the
+      extent to which their method differs from previous literature. The method
+      is in fact entirely equivalent to chosing an affine form for \(\alpha_t\)
+      and \(\sigma_t\). This choice differs from most of the literature, and they
+      claim it yields better FID on ImageNet. The training objective is also
+      essentially equivalent to denoising score matching, except that it includes
+      the entire RHS of the flow ODE, instead of just the score. This choice of
+      schedule and objective supposedly makes for an easier optimization.
 ---
 
 # Diffusion
@@ -188,43 +244,4 @@ This method of sampling the reverse process is more efficient than the
 stochastic one, and is amenable to distillation. However, it usually yields
 samples of lower quality, as measured by FID and other metrics.
 
-## References
-
-1.  <b>Anderson (1982), Reverse-time diffusion equation models.</b>
-    First derivation of the stochastic differential equation that describes
-    the reverse diffusion process.
-
-1.  <b>Vincent (2011), A Connection Between Score Matching and
-    Denoising Autoencoders.</b>
-
-1.  <b>Sohl-Dickstein <i>et al.</i> (2015), Deep Unsupervised
-    Learning using Nonequilibrium Thermodynamics</b>. First time learning to
-    reverse the diffusion process. It does not use the language of SDEs and
-    is not aware of the connection to score matching, but the substance is
-    the same as what is described here.
-
-1.  <b>Song, Ermon (2020), Generative Modeling by Estimating
-    Gradients of the Data Distribution</b> First time the lanuage of SDEs is
-    applied to the problem, and the connection to score matching is
-    exploited. Interesting discussion on how the noise in score matching
-    improves learning stability and the coverage of multiple distribution
-    modes.
-
-1.  <b>Ho <i>et al.</i> (2020), Denoising Diffusion Probabilistic
-   Models</b>. Contemporanous to the previous paper, and makes roughly the
-   same points.
-
-1.  <b>Song <i>et al.</i> (2021), Score-Based Generative Modeling
-   through Stochastic Differential Equations</b>. First time the probability
-   flow ODE is introduced.
-
-1. <b>Lipman <i>et al.</i> (2023), Flow Matching for Generative Modeling</b>.
-   This paper presents a fairly original derivation of the probability flow
-ODE and the score-matching objective. The paper is a bit ambiguous on the
-extent to which their method differs from previous literature. The method
-is in fact entirely equivalent to chosing a linear form for $$\alpha_t$$
-and $$\sigma_t$$. This choice differs from most of the literature, and they
-claim it yields better FID on ImageNet. The training objective is also
-essentially equivalent to denoising score matching, except that it includes
-the entire RHS of the flow ODE, instead of just the score. This choice of
-schedule and objective supposedly makes for an easier optimization.
+{% include references.md %}

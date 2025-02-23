@@ -8,8 +8,13 @@
 <ol>
 {% for reference in page.references %}
 <li id="{{reference.tag}}">
-    {{reference.authors}} ({{reference.year}}):
-    <a href="{{reference.url}}"> {{reference.title}} </a>
+    {{reference.authors}} ({{reference.year}}).
+    {% if reference.url %}
+        <a href="{{reference.url}}">{{reference.title}}.</a>
+    {% else %}
+        {{reference.title}}.
+    {% endif %}
+    {% if reference.notes %}{{reference.notes}} {% endif %}
 </li>
 {% endfor %}
 </ol>
