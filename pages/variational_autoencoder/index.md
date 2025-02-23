@@ -1,9 +1,16 @@
 ---
 layout: default
 title: Auto-encoding variational Bayes
+references:
+    - tag: ref_1
+      authors: Kingma, Welling
+      title: Auto-encoding variational Bayes
+      year: 2013
+      url: https://arxiv.org/abs/1312.6114
 ---
 
 # Auto-encoding variational Bayes
+
 
 ## Model
 
@@ -66,8 +73,5 @@ efficiently _evaluate_ $$p(x|\theta)$$ at a given value $$x = x_i$$ drawn from
 the empirical distribution. The integral domain is high-dimensional, and the
 integrand is a complicated, strongly-peaked function.
 
+{% include references.md %}
 
-## References
-
-[ref_1]: https://arxiv.org/abs/1312.6114 "Auto-encoding variational Bayes"
-1. Kingma, Welling. [Auto-encoding variational Bayes][ref_1]. (2013)
