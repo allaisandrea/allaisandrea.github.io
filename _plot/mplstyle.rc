@@ -1,0 +1,6 @@
+font.size: 16
+font.family: serif
+font.serif: EB Garamond
+mathtext.fontset: cm
+text.usetex: False
+lines.linewidth: 1.5
