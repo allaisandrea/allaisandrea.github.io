@@ -6,7 +6,7 @@ html {
     line-height: 1.5;
     margin-left: auto;
     margin-right: auto;
-    counter-reset: section;
+    counter-reset: section subsection;
     overflow-x: hidden;
 }
 
@@ -22,6 +22,7 @@ h1 {
 
 h2:before {
     counter-increment: section;
+    counter-reset: subsection;
     content: counter(section) '.';
     position: absolute;
     left: 0;
@@ -29,6 +30,18 @@ h2:before {
 
 h2 {
     padding-left: 1.5em;
+    position: relative;
+}
+
+h3:before {
+    counter-increment: subsection;
+    content: counter(section) '.' counter(subsection) '.';
+    position: absolute;
+    left: 0;
+}
+
+h3 {
+    padding-left: 2.0em;
     position: relative;
 }
 
