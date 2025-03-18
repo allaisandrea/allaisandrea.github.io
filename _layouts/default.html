@@ -2,8 +2,13 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title> {{page.title}} </title>
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+    {% if page.open_graph %}
+    <meta property="og:title" content="{{page.title}}" />
+    <meta property="og:image" content="{{site.url}}/{{page.open_graph.image}}" />
+    <meta property="og:description" content="{{page.open_graph.description}}" />
+    {% endif %}
+    <title> {{page.title}} </title>
     <script>
         MathJax = {
           tex: {

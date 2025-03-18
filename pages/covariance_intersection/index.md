@@ -12,6 +12,11 @@ references:
     year: 2002
     title: "Estimation under unknown correlation: covariance intersection revisited"
     url: https://ieeexplore.ieee.org/document/1047015
+open_graph:
+  image: pages/covariance_intersection/geometric_interpretation.png
+  description: >
+    Fuse two non-independent observations of the same parameter and establish
+    an upper bound on the uncertainty on the combined estimate.
 ---
 # Covariance intersection algorithm
 
