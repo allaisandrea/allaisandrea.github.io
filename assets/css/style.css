@@ -7,7 +7,6 @@ html {
     margin-left: auto;
     margin-right: auto;
     counter-reset: section subsection;
-    overflow-x: hidden;
 }
 
 body {
