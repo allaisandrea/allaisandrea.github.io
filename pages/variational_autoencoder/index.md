@@ -12,6 +12,10 @@ references:
     title: Variational Bayesian inference with Stochastic Search
     year: 2012
     url: https://arxiv.org/abs/1206.6430
+open_graph:
+  image: pages/variational_autoencoder/example_losses.png
+  description: >
+    Inference on directed probabilistic models with continuous latent variables.
 ---
 
 # Auto-encoding variational Bayes

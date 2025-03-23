@@ -57,6 +57,10 @@ references:
       essentially equivalent to denoising score matching, except that it includes
       the entire RHS of the flow ODE, instead of just the score. This choice of
       schedule and objective supposedly makes for an easier optimization.
+open_graph:
+  image: pages/diffusion/diffusion.png
+  description: >
+    A primer on generative modeling using diffusion.
 ---
 
 # Diffusion
