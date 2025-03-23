@@ -10,7 +10,7 @@
 <li id="{{reference.tag}}">
     {{reference.authors}} ({{reference.year}}).
     {% if reference.url %}
-        <a href="{{reference.url}}">{{reference.title}}.</a>
+        <a href="{{reference.url}}" target='_blank'>{{reference.title}}.</a>
     {% else %}
         {{reference.title}}.
     {% endif %}
