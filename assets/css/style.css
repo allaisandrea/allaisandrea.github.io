@@ -49,6 +49,11 @@ p {
     text-align: justify;
 }
 
+p.footer {
+    border-top: 1pt solid;
+    padding-top: 0.1em;
+}
+
 figure {
     margin: 0;
     text-align:center;
