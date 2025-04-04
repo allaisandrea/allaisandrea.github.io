@@ -288,12 +288,7 @@ def plot_graphical_models():
     figure.savefig("backward_process.png")
 
 
-plt.rcParams['font.size'] = 16
-plt.rcParams['font.family'] = 'serif'
-plt.rcParams['font.serif'] = ['EB Garamond']
-plt.rcParams["mathtext.fontset"] = 'cm'
-plt.rcParams["text.usetex"] = False
-plt.rcParams["lines.linewidth"] = 1.5
+plt.style.use('../../_plot/mplstyle.rc')
 
 plot_diffusion()
 plot_p_and_score()

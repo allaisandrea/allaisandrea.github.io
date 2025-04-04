@@ -29,7 +29,7 @@ def compute_coverage_3(alpha, mu):
 
 plt.style.use('../../_plot/mplstyle.rc')
 
-mu_values = numpy.arange(0.01, 8, 0.01)
+mu_values = numpy.arange(0.01, 7, 0.01)
 coverage_1 = [compute_coverage_1(0.95, mu) for mu in mu_values]
 coverage_2 = [compute_coverage_2(0.95, mu) for mu in mu_values]
 coverage_3 = [compute_coverage_3(0.95, mu) for mu in mu_values]
