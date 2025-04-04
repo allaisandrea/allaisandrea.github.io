@@ -67,3 +67,15 @@ figure img {
     width: 100%;
 }
 
+table {
+    table-layout: fixed;
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid;
+}
+
+th, td {
+    border: 1px solid;
+    padding: 0.2em 0.5em 0.2em 0.5em;
+}
+
