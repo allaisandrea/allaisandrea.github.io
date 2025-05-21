@@ -58,6 +58,16 @@ p.footer {
     padding-top: 0.1em;
 }
 
+p.quotation {
+    background: rgb(235, 235, 235);
+    margin-left: 1em;
+    margin-right: 1em;
+    padding-left: 1.25em;
+    padding-right: 1.25em;
+    padding-top: 0.75em;
+    padding-bottom: 0.75em;
+}
+
 figure {
     margin: 0;
     text-align:center;
