@@ -193,29 +193,32 @@ ability to evaluate the score function efficiently.
 
 ## Denoising score matching
 
-An efficient objective can be specified to learn a parametric approximation
-$$s_\theta(x, t)$$ to the score function $$\nabla \log p(x, t)$$. The objective is
-the naive one:
+The score function can be estimated efficiently thanks to the identity
 \begin{equation}
-    L(\theta, t) = \expectation{x_t}{\left|s_{\theta}(x_t, t) - \nabla \log p(x_t, t)\right|^2}\,,
+\nabla \log p(x_t, t) = \expectation{x_0|x_t}{\nabla \log p(x_t|x_0, t)}\,.
 \end{equation}
-but made tractable thanks to the non-trivial equivalence:
+Unlike the marginal PDF $$p(x_t, t)$$, the conditional
+PDF $$p(x_t|x_0, t)$$ is known in closed form, because $$x_t|x_0 \sim
+\normal{\alpha_t x_0}{\sigma_t^2 I}$$:
 \begin{equation}
-    L(\theta, t) = \expectation{x_0, x_t}{\left|s_{\theta}(x_t, t) - \nabla \log p(x_t | x_0, t)\right|^2}\,,
-\end{equation}
-where $$p(x_t|x_0, t)$$ is the PDF of $$x_t$$ *conditional* on $$x_0$$.
-
-The second form is tractable because, as discussed before:
-\begin{equation}
-    x_t|x_0 \sim \normal{\alpha_t x_0}{\sigma_t^2 I}
-\end{equation}
-and hence:
-\begin{equation}
-    L(\theta, t) = \expectation{x_0, x_t}{\left|s_{\theta}(x_t, t) -
-    \frac{\alpha_tx_0 - x_t}{\sigma_t^2}\right|^2}\,.
+\nabla \log p(x_t | x_0, t) = \frac{\alpha_t x_0 - x_t}{\sigma^2_t}\,.
 \end{equation}
 
-The learning objective can be interpreted as the objective for a denoising
+This identity can be leveraged to construct an objective for a
+parametric approximation $$s_\theta(x, t)$$ to the score function $$\nabla \log
+p(x, t)$$:
+\begin{equation}
+    L(\theta, t) = \expectation{x_0, x_t}{\left\Vert s_{\theta}(x_t, t) - \nabla \log p(x_t | x_0, t)\right\Vert^2}\,.
+\end{equation}
+The unconstrained optimum of this objective is the score function $$\nabla
+p(x_t, t)$$.
+
+Explicitly, the objective reads:
+\begin{equation}
+    L(\theta, t) = \expectation{x_0, x_t}{\left\Vert s_{\theta}(x_t, t) -
+    \frac{\alpha_tx_0 - x_t}{\sigma_t^2}\right\Vert^2}\,,
+\end{equation}
+and an be interpreted as the objective for a denoising
 autoencoder:
 
 1.  Sample $$x_0$$ from the data distribution.
@@ -267,5 +270,56 @@ through $$x_t$$, as illustrated in the figure below.
 Using the probability flow ODE to sample from the reverse process is more
 efficient than the SDE, and is amenable to distillation. However, it usually
 yields samples of lower quality as measured by FID.
+
+## Proofs
+
+### Score function expectation identity
+<p>
+\begin{equation}
+\begin{split}
+\nabla \log p(x_t)
+&= \frac{1}{p(x_t)} \nabla p(x_t) \\
+&= \frac{1}{p(x_t)} \int p(x_0) \nabla p(x_t | x_0)\ \dd x_0 \\
+&= \frac{1}{p(x_t)} \int \frac{p(x_t) p(x_0 | x_t)}{p(x_t | x_0)} \nabla p(x_t | x_0)\ \dd x_0 \\
+&= \int p(x_0 | x_t)\nabla \log p(x_t | x_0)\ \dd x_0 \\
+&= \expectation{x_0|x_t}{\nabla \log p(x_t | x_0)}
+\end{split}
+\end{equation}
+</p>
+
+### Score matching loss optimum
+
+The proposition
+\begin{equation}
+s_{\mathrm{opt}}(x_t, t) = \expectation{x_0|x_t}{\nabla \log p(x_t|x_0, t)}
+\end{equation}
+is a special case of the following proposition.
+
+The optimum of the functional:
+\begin{equation}
+L[f] = \expectation{x, y}{\left \Vert f(x) - g(x, y)\right\Vert^2}
+\end{equation}
+is:
+\begin{equation}
+f_{\mathrm{opt}}(x) =  \expectation{y|x}{g(x, y)}
+\end{equation}
+
+Proof:
+<p>
+\begin{equation}
+\begin{split}
+\delta L[f]
+&= 2 \expectation{x, y}{\delta f(x) \cdot \left(f(x) - g(x, y)\right) } \\
+&= 2 \expectation{x}{\expectation{y|x}{\delta f(x)\cdot\left(f(x) - g(x, y)\right)}} \\
+&= 2 \expectation{x}{\delta f(x) \cdot \expectation{y|x}{\left(f(x) - g(x, y)\right)}} \\
+&= 2 \expectation{x}{\delta f(x) \cdot \left(f(x) - \expectation{y|x}{g(x, y)}\right)}\,.
+\end{split}
+\end{equation}
+</p>
+
+The optimum has zero variation for any perturbation $$\delta f$$, which yields
+the theorem.
+
+
 
 {% include references.md %}
