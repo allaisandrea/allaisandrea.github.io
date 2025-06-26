@@ -28,12 +28,12 @@
      inkscape:document-units="px"
      showgrid="true"
      inkscape:zoom="0.9719115"
-     inkscape:cx="288.09207"
-     inkscape:cy="224.81471"
+     inkscape:cx="287.57762"
+     inkscape:cy="225.32916"
      inkscape:window-width="1440"
-     inkscape:window-height="900"
+     inkscape:window-height="847"
      inkscape:window-x="0"
-     inkscape:window-y="0"
+     inkscape:window-y="25"
      inkscape:window-maximized="0"
      inkscape:current-layer="layer1">
     <inkscape:grid
@@ -225,13 +225,13 @@
        x="0"
        y="0"
        transform="translate(-2.0079766,67.591564)"><tspan
-         x="478.56003"
+         x="472.26671"
          y="51.12845"
-         id="tspan5">95 % 
+         id="tspan8">≥95 % 
 </tspan><tspan
-         x="459.21076"
+         x="454.78409"
          y="77.795076"
-         id="tspan6">frequency</tspan></text>
+         id="tspan9">probability</tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-variation-settings:normal;opacity:1;vector-effect:none;fill-opacity:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;-inkscape-stroke:none;stop-color:#000000;stop-opacity:1"
        d="m 408,232 h 16 v 48 h -16"
@@ -244,13 +244,13 @@
        x="0"
        y="0"
        transform="translate(-2.0079766,3.591564)"><tspan
-         x="485.81336"
+         x="479.52003"
          y="243.12845"
-         id="tspan7">5 %
+         id="tspan10">≤5 %
 </tspan><tspan
-         x="459.21076"
+         x="454.78409"
          y="269.79508"
-         id="tspan8">frequency</tspan></text>
+         id="tspan11">probability</tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker15);marker-end:url(#ConcaveTriangle)"
        d="m 128,64 h 56"

@@ -6,53 +6,39 @@ title: Confidence intervals
 
 ## Definition
 
-Let's say we have collected some observations $$x$$, for example a few die rolls:
-$$x = (1, 3, 3, 6)$$. Supposedly, these observation are distributed according to
-some parametric model with unknown parameters $$\theta$$. In the case of the die
-roll, the model could be the categorical distribution, whose parameters are the
-probabilities of each category: $$\theta = (p_1, \ldots, p_6)$$. Based on our
-observations, we would like to establish some region of parameter space within
-which $$\theta$$ most likely lies.
+An $$\alpha$$-confidence interval for a parameter $$\theta$$ may be defined
+concisely as <q>an interval which covers the true value of $$\theta$$ with
+probability $$\geq\alpha$$</q>. However, this definition is ambiguous without
+a description of the precise mechanism implied by the word probability.
 
+The mechanism is illustrated in the diagram below, with $$\alpha = 0.95$$. The
+confidence interval is really an interval-valued function, that maps a sample
+$$(x_1, x_2, \ldots, x_n)$$ drawn from the population of interest, to an
+interval. If another sample is drawn, the associated confidence interval is
+usually different. For some samples, the interval covers the parameter
+$$\theta$$, and for other samples it does not. However, the confidence interval
+function is constructed in such a way that, upon repeated sampling from the
+population, the associated intervals cover the parameter $$\theta$$ with
+probability $$\geq \alpha$$.
 <figure>
 <img src='coverage_diagram.png' alt='Diagram of interval coverage' style='max-width:6in' />
 </figure>
 
-More precisely, we want to define a function $$J$$ that associates to any
-possible observation $$x$$ a region $$J(x)$$ of parameter space such that
-<q>most likely</q> $$\theta \in J(x)$$. To give a precise meaning to <q>most
-likely</q>, we must first define the notion of _coverage_. The coverage
-$$Q(J, \theta)$$ of $$J$$ given $$\theta$$ is the probability, for any given
-$$\theta$$, that the interval $$J$$ covers $$\theta$$:
+Importantly, the coverage probability must be $$\geq \alpha$$  <em> regardless
+of the value of the parameter $$\theta$$ </em>.
 
-\begin{equation}
-    Q(J, \theta) \equiv \sum_{x} p(x|\theta) I(\theta \in J(x))\,.
-\end{equation}
+Of course, one way to ensure coverage $$\geq \alpha$$ is to associate a very
+large interval to each sample. In the extreme, if the associated intervals
+always cover all possible values of the parameter, the coverage will be 1. But
+these would not be very useful intervals. The name of the game is to construct
+intervals with coverage as close as possible to the level $$\alpha$$, without
+going under.
 
-Here $$p(x|\theta)$$ is the probability of each observation $$x$$ given $$\theta$$,
-and $$I(P)$$ is the indicator function, which is 1 if the predicate $$P$$ is true,
-and 0 if it is false.
 
-A variation of $$J$$ that associates smaller regions to each observation yields a
-coverage closer to 0, and conversely, a tweak towards larger regions yields a
-coverage closer to 1. In the extreme, if $$J$$ yields the full parameter space
-for all observations, the coverage is exactly 1. Ideally, we would like a
-function $$J_\gamma$$ that gives the smallest possible regions, while preserving
-at least a  prescribed minimum coverage $$\gamma \in(0, 1)$$. And crucially, we
-would like $$J_\gamma$$ to do so _regardless_ of the true value of $$\theta$$:
-
-\begin{equation}
-    J_\gamma\quad |\quad \forall\, \theta \quad Q(J_\gamma, \theta) \geq \gamma
-\end{equation}
-
-This set of requirements is such a tall order that it is worth repeating: the
-function $$J_\gamma$$ is expected to yield the smallest possible regions of
-parameters space, while maintaning a minimum coverage, regardless of the
-unknown true values of the parameters, just based on the observation $$x$$.
-
-The region of parameter space that such a function associates to a given
-observation $$x$$ is called _confidence interval_ at the confidence level
-$$\gamma$$.
+In some cases, it is possible to construct confidence intervals with coverage
+exactly equal to the confidence level. This is the case for the normal
+population example below, but it is not always possible, and it is never
+possible for distributions with discrete domain.
 
 The minimum coverage reqirement for $$J$$ is so strong, that it often forces
 $$J_\gamma$$ to yield very conservative (large) regions, just to make sure that
@@ -65,24 +51,6 @@ requirement was waived. These kind of weaker confidence intervals are sometimes
 characterized as _approximate_, and the stronger confidence intervals as
 _exact_.
 
-In some cases, depending on the parametric model, it is possible to find a
-function $$J_\gamma$$ that saturates the minimum coverage bound for all values of
-$$\theta$$: $$Q(J_\gamma, \theta) = \gamma\quad \forall\, \theta$$. This is the
-case for observations that follow the normal distribution, but it is not always
-possible, and it is never possible for distributions with discrete domain.
-
-Since there is a lot of confusion about confidence intervals, it is also worth
-emphasizing what a confidence interval is _not_:
-
-1. The sample mean plus or minus some number times the variance of the sample
-mean (unless the sample mean happens to be normally distributed).
-
-1. A couple of quantiles of the sample mean distribution.
-
-1. A couple of quantiles of the bayesian posterior distribution
-$$p(\theta|x)$$. Intervals obtained in this way are sometimes called _credible
-intervals_. They are often used in practice as a replacement for true
-confidence intervals, but they have no guaratees of minimum coverage.
 
 ## Example: normal distribution
 
