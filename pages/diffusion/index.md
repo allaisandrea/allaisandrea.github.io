@@ -245,14 +245,27 @@ figure below:
 <img src="probability_flow.png" alt="Example of proability flow reverse process" style="max-width:7in"/>
 </figure>
 
-The probability flow ODE takes a particularly simple form when the schedules are linear: $$\alpha_t = 1 - t$$, $$\sigma_t = t$$. In this case, substituting the score matching
+The probability flow ODE takes a particularly simple form when the schedules are
+linear: $$\alpha_t = 1 - t$$, $$\sigma_t = t$$. In this case, substituting the
+score matching identity yields:
+\begin{equation}
+    \frac{\dd x_t}{\dd t} = - \expectation{x_0, x_1 | x_t}{x_1 - x_0}\,,
+\end{equation}
+where the expectation is with respect to $$x_0, x_1 | x_t$$, as can be obtained with Bayes' rule from:
+\begin{equation}
+x_0 \sim \mathrm{Data}\,,\quad x_1 \sim \normal{0}{I}\,,\quad x_t|x_0, x_1 = (1 - t)\, x_0 + t\, x_1\,.
+\end{equation}
 
-This method of sampling the reverse process is more efficient than the
-stochastic one, and is amenable to distillation. However, it usually yields
-samples of lower quality, as measured by FID and other metrics.
-
+Geometrically, the RHS of the ODE is the average slope of all the lines
+connecting $$x_0\sim\mathrm{Data}$$ and $$x_1\sim\normal{0}{I}$$ that pass
+through $$x_t$$, as illustrated in the figure below.
 <figure>
 <img src="slope_distribution_0.svg" alt="Illustrate the relationship between the probability flow and the slope distribution" style="max-width:7in" id="img-slope-distribution"/>
 </figure>
+
+
+Using the probability flow ODE to sample from the reverse process is more
+efficient than the SDE, and is amenable to distillation. However, it usually
+yields samples of lower quality as measured by FID.
 
 {% include references.md %}
