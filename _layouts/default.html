@@ -34,6 +34,9 @@
     <script type="text/javascript" id="MathJax-script" async
       src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
     </script>
+    {% if page.script %}
+    <script defer src="{{ page.script }}"></script>
+    {% endif %}
     <link rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,700;1,400;1,700">
     <link rel="stylesheet" href="/assets/css/style.css" />

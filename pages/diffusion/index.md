@@ -61,6 +61,7 @@ open_graph:
   image: pages/diffusion/diffusion.png
   description: >
     A primer on generative modeling using diffusion.
+script: script.js
 ---
 
 # Diffusion
@@ -247,5 +248,9 @@ figure below:
 This method of sampling the reverse process is more efficient than the
 stochastic one, and is amenable to distillation. However, it usually yields
 samples of lower quality, as measured by FID and other metrics.
+
+<figure>
+<img src="slope_expectation_1.svg" alt="Illustrate the relationship between the probability flow and the slope distribution" style="max-width:7in" id="img-slope-expectation"/>
+</figure>
 
 {% include references.md %}
