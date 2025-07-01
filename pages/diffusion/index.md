@@ -245,6 +245,8 @@ figure below:
 <img src="probability_flow.png" alt="Example of proability flow reverse process" style="max-width:7in"/>
 </figure>
 
+The probability flow ODE takes a particularly simple form when the schedules are linear: $$\alpha_t = 1 - t$$, $$\sigma_t = t$$. In this case, substituting the score matching
+
 This method of sampling the reverse process is more efficient than the
 stochastic one, and is amenable to distillation. However, it usually yields
 samples of lower quality, as measured by FID and other metrics.
