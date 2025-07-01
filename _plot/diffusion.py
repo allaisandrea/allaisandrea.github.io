@@ -142,7 +142,9 @@ def sample_diffusion(x_0, lambda_, gsq, nt, rng):
     return np.array(t_list), np.array(x_list)
 
 
-def plot_flow(compute_log_p, x_range, n_mesh_t=1024, n_mesh_x=1024, include_pdf=True)->tuple[matplotlib.figure.Figure, list[matplotlib.axes.Axes]]:
+def plot_flow(
+    compute_log_p, x_range, n_mesh_t=1024, n_mesh_x=1024, include_pdf=True
+) -> tuple[matplotlib.figure.Figure, list[matplotlib.axes.Axes]]:
     t_range = [0, 1]
     t_mesh = bin_centers(*t_range, n_mesh_t)
     x_mesh = bin_centers(*x_range, n_mesh_x)
@@ -293,7 +295,9 @@ def plot_p_and_score(output_path):
     figure.savefig(os.path.join(output_path, "score_function.png"))
 
 
-def plot_slope_distribution(t_point: float, output_tag: str|None, output_path: str | None):
+def plot_slope_distribution(
+    t_point: float, output_tag: str | None, output_path: str | None
+):
     pi1 = 0.8
     x1 = -1.0
     sigma1 = 0.1
@@ -347,19 +351,35 @@ def plot_slope_distribution(t_point: float, output_tag: str|None, output_path: s
     )
     figure, axes = plot_flow(compute_log_p, x_range=(-3, 3), include_pdf=False)
     plot_schedule(axes[3], alpha, sigma)
-    axes[1].plot(t_list, x_list, c="lightgray", linewidth=0.5, alpha=1.0)
+    axes[1].plot(t_list, x_list, c="lightgray", linewidth=1.0)
     axes[1].add_artist(
         matplotlib.collections.LineCollection(
-            lines, linewidth=0.5, color="orangered", alpha=0.5
+            lines, linewidth=1.0, color="orangered", alpha=0.5
         )
     )
-    axes[1].plot([t_point], [x_t_point], marker='o', markersize=3, markerfacecolor='k', markeredgecolor='k')
-    axes[1].annotate("$(t, x_t)$", (t_point, x_t_point), (0, 10), textcoords='offset points', ha='center', va='bottom')
-    
-    axes[1].plot(t_list, x_list[:, j_point], c="black", linewidth=1, alpha=1.0)
+    axes[1].plot(
+        [t_point],
+        [x_t_point],
+        marker="o",
+        markersize=3,
+        markerfacecolor="k",
+        markeredgecolor="k",
+    )
+    axes[1].annotate(
+        "$(t, x_t)$",
+        (t_point, x_t_point),
+        (0, 10),
+        textcoords="offset points",
+        ha="center",
+        va="bottom",
+    )
+    axes[1].plot(t_list, x_list[:, j_point], c="black", linewidth=1.5)
     if output_path is not None:
         assert output_tag is not None
-        figure.savefig(os.path.join(output_path, f"slope_expectation_{output_tag}.svg"), format="SVG")
+        figure.savefig(
+            os.path.join(output_path, f"slope_distribution_{output_tag}.svg"),
+            format="SVG",
+        )
     return figure
 
 
@@ -465,4 +485,6 @@ if __name__ == "__main__":
     plot_p_and_score(output_path)
     plot_graphical_models(output_path)
     for i, t_point in enumerate([0.1, 0.4, 0.6, 0.9]):
-        plot_slope_distribution(t_point=t_point, output_tag=str(i), output_path=output_path)
+        plot_slope_distribution(
+            t_point=t_point, output_tag=str(i), output_path=output_path
+        )
