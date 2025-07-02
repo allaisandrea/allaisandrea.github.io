@@ -198,7 +198,7 @@ def make_interpolant_plot_template(
     template.noise_pdf_axes.yaxis.set_tick_params(labelleft=False)
     template.schedule_axes.xaxis.set_tick_params(labelleft=False)
     template.noise_pdf_axes.set_xticks([])
-    template.schedule_axes.set_ylabel("$x$")
+    template.data_pdf_axes.set_ylabel("$x$")
     template.data_pdf_axes.grid()
     template.noise_pdf_axes.grid()
 
