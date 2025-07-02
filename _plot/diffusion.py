@@ -142,15 +142,23 @@ def sample_diffusion(x_0, lambda_, gsq, nt, rng):
     return np.array(t_list), np.array(x_list)
 
 
-def plot_flow(
-    compute_log_p, x_range, n_mesh_t=1024, n_mesh_x=1024, include_pdf=True
-) -> tuple[matplotlib.figure.Figure, list[matplotlib.axes.Axes]]:
+@dataclasses.dataclass
+class InterpolantPlotTemplate:
+    figure: matplotlib.figure.Figure
+    schedule_axes: matplotlib.axes.Axes
+    data_pdf_axes: matplotlib.axes.Axes
+    noise_pdf_axes: matplotlib.axes.Axes
+    interpolant_axes: matplotlib.axes.Axes
+
+
+def make_interpolant_plot_template(
+    compute_log_p, x_range, n_mesh_t=1024, n_mesh_x=1024, include_interpolant_pdf=True
+) -> InterpolantPlotTemplate:
     t_range = [0, 1]
     t_mesh = bin_centers(*t_range, n_mesh_t)
     x_mesh = bin_centers(*x_range, n_mesh_x)
     t_mesh = t_mesh[None, :]
     x_mesh = x_mesh[:, None]
-    log_p, _ = compute_log_p(t_mesh, x_mesh)
     log_p0, _ = compute_log_p(0, x_mesh)
     log_p1, _ = compute_log_p(1, x_mesh)
     figure = plt.figure(figsize=(7, 5), dpi=300)
@@ -171,33 +179,41 @@ def plot_flow(
     axes[1] = figure.add_subplot(grid_spec[1, 1], sharey=axes[0])
     axes[2] = figure.add_subplot(grid_spec[1, 2], sharey=axes[0])
     axes[3] = figure.add_subplot(grid_spec[0, 1], sharex=axes[1])
+    template = InterpolantPlotTemplate(
+        figure=figure,
+        data_pdf_axes=axes[0],
+        interpolant_axes=axes[1],
+        noise_pdf_axes=axes[2],
+        schedule_axes=axes[3],
+    )
 
-    axes[0].plot(np.exp(log_p0), x_mesh, c="black")
-    axes[2].plot(np.exp(log_p1), x_mesh, c="black")
-    axes[0].set_xlim(0, None)
-    axes[2].set_xlim(0, None)
-    axes[0].set_xlabel("$p(x, 0)$")
-    axes[2].set_xlabel("$p(x, 1)$")
-    axes[0].set_xticks([])
-    axes[1].yaxis.set_tick_params(labelleft=False)
-    axes[2].yaxis.set_tick_params(labelleft=False)
-    axes[3].xaxis.set_tick_params(labelleft=False)
-    axes[2].set_xticks([])
-    axes[0].set_ylabel("$x$")
-    axes[0].grid()
-    axes[2].grid()
+    template.data_pdf_axes.plot(np.exp(log_p0), x_mesh, c="black")
+    template.noise_pdf_axes.plot(np.exp(log_p1), x_mesh, c="black")
+    template.data_pdf_axes.set_xlim(0, None)
+    template.noise_pdf_axes.set_xlim(0, None)
+    template.data_pdf_axes.set_xlabel("$p(x, 0)$")
+    template.noise_pdf_axes.set_xlabel("$p(x, 1)$")
+    template.data_pdf_axes.set_xticks([])
+    template.interpolant_axes.yaxis.set_tick_params(labelleft=False)
+    template.noise_pdf_axes.yaxis.set_tick_params(labelleft=False)
+    template.schedule_axes.xaxis.set_tick_params(labelleft=False)
+    template.noise_pdf_axes.set_xticks([])
+    template.schedule_axes.set_ylabel("$x$")
+    template.data_pdf_axes.grid()
+    template.noise_pdf_axes.grid()
 
     levels = np.array([0.0, 0.05, 0.1, 0.2, 0.3, 0.4, 0.6, 1.0, 2.0, 1000]) / 2.5
-    if include_pdf:
-        axes[1].contourf(
+    if include_interpolant_pdf:
+        log_p, _ = compute_log_p(t_mesh, x_mesh)
+        template.interpolant_axes.contourf(
             t_mesh[0, :], x_mesh[:, 0], np.exp(log_p), levels=levels, vmax=2 / 2.5
         )
-    axes[1].set_xlim(*t_range)
-    axes[1].set_ylim(*x_range)
-    axes[1].set_aspect("auto")
-    axes[1].set_xlabel("$t$")
-    figure.align_xlabels(axes)
-    return figure, axes
+    template.interpolant_axes.set_xlim(*t_range)
+    template.interpolant_axes.set_ylim(*x_range)
+    template.interpolant_axes.set_aspect("auto")
+    template.interpolant_axes.set_xlabel("$t$")
+    template.figure.align_xlabels()
+    return template
 
 
 def plot_schedule(axes, alpha, sigma):
@@ -237,8 +253,8 @@ def plot_diffusion(output_path: str):
         pi2,
         make_conditional_log_p_function(x0=x2, sigma0=sigma2, alpha=alpha, sigma=sigma),
     )
-    figure, axes = plot_flow(compute_log_p, x_range=(-3, 3))
-    plot_schedule(axes[3], alpha, sigma)
+    template = make_interpolant_plot_template(compute_log_p, x_range=(-3, 3))
+    plot_schedule(template.schedule_axes, alpha, sigma)
     rng = np.random.default_rng(0)
     n_sample = 16
     x_0 = np.where(
@@ -247,11 +263,11 @@ def plot_diffusion(output_path: str):
         rng.normal(x2, sigma2, size=n_sample),
     )
     t_list, x_list = sample_diffusion(x_0, lambda_=lambda_, gsq=gsq, nt=8192, rng=rng)
-    axes[1].plot(t_list, x_list, c="white", linewidth=0.5, alpha=0.5)
-    figure.savefig(os.path.join(output_path, "diffusion.png"))
+    template.interpolant_axes.plot(t_list, x_list, c="white", linewidth=0.5, alpha=0.5)
+    template.figure.savefig(os.path.join(output_path, "diffusion.png"))
 
-    figure, axes = plot_flow(compute_log_p, x_range=(-3, 3))
-    plot_schedule(axes[3], alpha, sigma)
+    template = make_interpolant_plot_template(compute_log_p, x_range=(-3, 3))
+    plot_schedule(template.schedule_axes, alpha, sigma)
     t_list, x_list = integrate_flow(
         x_1=scipy.stats.norm.ppf(bin_centers(0, 1.0, 16)),
         lambda_=lambda_,
@@ -259,8 +275,8 @@ def plot_diffusion(output_path: str):
         compute_log_p=compute_log_p,
         nt=2048,
     )
-    axes[1].plot(t_list, x_list, c="white", linewidth=1, alpha=0.5)
-    figure.savefig(os.path.join(output_path, "probability_flow.png"))
+    template.interpolant_axes.plot(t_list, x_list, c="white", linewidth=1, alpha=0.5)
+    template.figure.savefig(os.path.join(output_path, "probability_flow.png"))
 
 
 def plot_p_and_score(output_path):
@@ -297,7 +313,7 @@ def plot_p_and_score(output_path):
 
 def plot_slope_distribution(
     t_point: float, output_tag: str | None, output_path: str | None
-):
+) -> InterpolantPlotTemplate:
     pi1 = 0.8
     x1 = -1.0
     sigma1 = 0.1
@@ -349,15 +365,17 @@ def plot_slope_distribution(
         ),
         (-1, 2, 2),
     )
-    figure, axes = plot_flow(compute_log_p, x_range=(-3, 3), include_pdf=False)
-    plot_schedule(axes[3], alpha, sigma)
-    axes[1].plot(t_list, x_list, c="lightgray", linewidth=1.0)
-    axes[1].add_artist(
+    template = make_interpolant_plot_template(
+        compute_log_p, x_range=(-3, 3), include_interpolant_pdf=False
+    )
+    plot_schedule(template.schedule_axes, alpha, sigma)
+    template.interpolant_axes.plot(t_list, x_list, c="lightgray", linewidth=1.0)
+    template.interpolant_axes.add_artist(
         matplotlib.collections.LineCollection(
             lines, linewidth=1.0, color="orangered", alpha=0.5
         )
     )
-    axes[1].plot(
+    template.interpolant_axes.plot(
         [t_point],
         [x_t_point],
         marker="o",
@@ -365,7 +383,7 @@ def plot_slope_distribution(
         markerfacecolor="k",
         markeredgecolor="k",
     )
-    axes[1].annotate(
+    template.interpolant_axes.annotate(
         "$(t, x_t)$",
         (t_point, x_t_point),
         (0, 10),
@@ -373,14 +391,14 @@ def plot_slope_distribution(
         ha="center",
         va="bottom",
     )
-    axes[1].plot(t_list, x_list[:, j_point], c="black", linewidth=1.5)
+    template.interpolant_axes.plot(t_list, x_list[:, j_point], c="black", linewidth=1.5)
     if output_path is not None:
         assert output_tag is not None
-        figure.savefig(
+        template.figure.savefig(
             os.path.join(output_path, f"slope_distribution_{output_tag}.svg"),
             format="SVG",
         )
-    return figure
+    return template
 
 
 @dataclasses.dataclass
