@@ -7,6 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy
 import matplotlib
+from matplotlib.path import Path
 import lib
 
 
@@ -598,9 +599,11 @@ def plot_consistency_model_integration(output_path: str):
     t2 = trajectory_t[i2]
     x_t1 = trajectory_x[i1, j1]
     x_t2 = trajectory_x[i2, j2]
+    x_01 = trajectory_x[-1, j1]
+    x_02 = trajectory_x[-1, j2]
     line_x0 = (t2 * x_t1 - t1 * x_t2) / (t2 - t1)
     line_x1 = ((1 - t1) * x_t2 - (1 - t2) * x_t1) / (t2 - t1)
-    template = make_interpolant_plot_template(interpolant, x_range=(-3, 3))
+    template = make_interpolant_plot_template(interpolant, x_range=(-2, 4))
     plot_schedule(template.schedule_axes, interpolant.noise_schedule)
     template.interpolant_axes.plot(
         trajectory_t, trajectory_x, c="lightgray", linewidth=1.0
@@ -616,11 +619,31 @@ def plot_consistency_model_integration(output_path: str):
         linestyle="--",
     )
     template.interpolant_axes.plot(
-        [0, 1], [line_x0, line_x1], c="orangered", linewidth=1.0
+        [0, 1],
+        [line_x0, line_x1],
+        c="orangered",
+        linewidth=1.0,
+        marker="o",
+        markersize=5,
+        markerfacecolor="orangered",
+        markeredgecolor="orangered",
+    )
+    template.interpolant_axes.add_artist(
+        matplotlib.patches.FancyArrowPatch(
+            path=Path(
+                vertices=[
+                    (trajectory_t[i1], trajectory_x[i1, j1]),
+                    (0.5, 3.0),
+                    (trajectory_t[-1], trajectory_x[-1, j1]),
+                ],
+                codes=[Path.MOVETO, Path.CURVE3, Path.CURVE3],
+            ),
+            arrowstyle="->",
+        )
     )
     template.interpolant_axes.plot(
-        [t1, t2],
-        [x_t1, x_t2],
+        [0, 0, t1, t2],
+        [x_01, x_02, x_t1, x_t2],
         linestyle="none",
         marker="o",
         markersize=5,
@@ -628,19 +651,51 @@ def plot_consistency_model_integration(output_path: str):
         markeredgecolor="k",
     )
     template.interpolant_axes.annotate(
-        "$(s, x_s)$",
+        "$x_0$",
+        (0, line_x0),
+        (5, 5),
+        textcoords="offset points",
+        ha="left",
+        va="bottom",
+    )
+    template.interpolant_axes.annotate(
+        "$x_1$",
+        (1, line_x1),
+        (-5, -5),
+        textcoords="offset points",
+        ha="right",
+        va="top",
+    )
+    template.interpolant_axes.annotate(
+        "$x_t$",
         (t1, x_t1),
-        (0, 10),
+        (0, 5),
         textcoords="offset points",
         ha="center",
         va="bottom",
     )
     template.interpolant_axes.annotate(
-        "$(t, x_t)$",
+        r"$x_{t + \Delta t}$",
         (t2, x_t2),
-        (0, -10),
+        (0, -5),
         textcoords="offset points",
         ha="center",
+        va="top",
+    )
+    template.interpolant_axes.annotate(
+        r"$F(x_t)$",
+        (0, x_01),
+        (5, 5),
+        textcoords="offset points",
+        ha="left",
+        va="bottom",
+    )
+    template.interpolant_axes.annotate(
+        r"$x_0$",
+        (0, x_02),
+        (5, -5),
+        textcoords="offset points",
+        ha="left",
         va="top",
     )
     if output_path is not None:

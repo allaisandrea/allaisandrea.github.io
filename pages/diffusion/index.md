@@ -66,7 +66,7 @@ script: script.js
 
 # Diffusion
 
-## Forward process
+## Forward process {#section-forward-process}
 
 The goal of generative modeling is to map a random variable with a known and
 simple distribution (<i>e.g.</i> the normal distribution), to a random
@@ -191,7 +191,7 @@ probability, and drives the reverse diffusion process there.  The practical use
 of reverse diffusion to sample from the data distribution depends on the
 ability to evaluate the score function efficiently.
 
-## Denoising score matching
+## Denoising score matching {#section-denoising-score-matching}
 
 The score function can be estimated efficiently thanks to the identity
 \begin{equation}
@@ -229,7 +229,7 @@ autoencoder:
 1.  Regress the added noise $$z / \sigma_t$$ from the noisy
     variable $$x_t$$ to obtain $$s_\theta(x, t)$$.
 
-## Probability flow
+## Probability flow {#section-probability-flow}
 
 It is also possible to construct an ordinary differential equation that
 reproduces the marginal distribution of $$x_t$$ according to the diffusion
@@ -252,7 +252,7 @@ The probability flow ODE takes a particularly simple form when the schedules are
 linear: $$\alpha_t = 1 - t$$, $$\sigma_t = t$$. In this case, substituting the
 score matching identity yields:
 \begin{equation}
-    \frac{\dd x_t}{\dd t} = - \expectation{x_0, x_1 | x_t}{x_1 - x_0}\,,
+    \frac{\dd x_t}{\dd t} = \expectation{x_0, x_1 | x_t}{x_1 - x_0}\,,
 \end{equation}
 where the expectation is with respect to $$x_0, x_1 | x_t$$, as can be obtained with Bayes' rule from:
 \begin{equation}
