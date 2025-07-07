@@ -1,4 +1,5 @@
 from typing import Callable, Sequence
+import sys
 import abc
 import os
 import dataclasses
@@ -575,7 +576,7 @@ def plot_slope_distribution(
     return template
 
 
-def plot_consistency_model_integration(output_path: str):
+def plot_consistency_models_integration(output_path: str):
     interpolant = GaussianMixtureInterpolant(
         noise_schedule=LinearNoiseSchedule(),
         x0_distr=GaussianMixture(
@@ -630,15 +631,27 @@ def plot_consistency_model_integration(output_path: str):
     )
     template.interpolant_axes.add_artist(
         matplotlib.patches.FancyArrowPatch(
-            path=Path(
-                vertices=[
-                    (trajectory_t[i1], trajectory_x[i1, j1]),
-                    (0.5, 3.0),
-                    (trajectory_t[-1], trajectory_x[-1, j1]),
-                ],
-                codes=[Path.MOVETO, Path.CURVE3, Path.CURVE3],
-            ),
+            posA=(trajectory_t[i1], trajectory_x[i1, j1]),
+            posB=(trajectory_t[-1], trajectory_x[-1, j1]),
             arrowstyle="->",
+            connectionstyle="arc3,rad=0.4",
+            mutation_scale=15,
+            shrinkA=10,
+            shrinkB=10,
+            edgecolor="royalblue",
+        )
+    )
+    template.interpolant_axes.add_artist(
+        matplotlib.patches.FancyArrowPatch(
+            posA=(trajectory_t[i2], trajectory_x[i2, j2]),
+            posB=(trajectory_t[-1], trajectory_x[-1, j2]),
+            arrowstyle="->",
+            connectionstyle="arc3,rad=-0.3",
+            mutation_scale=15,
+            shrinkA=10,
+            shrinkB=10,
+            edgecolor="royalblue",
+            zorder=10,
         )
     )
     template.interpolant_axes.plot(
@@ -677,30 +690,16 @@ def plot_consistency_model_integration(output_path: str):
     template.interpolant_axes.annotate(
         r"$x_{t + \Delta t}$",
         (t2, x_t2),
-        (0, -5),
-        textcoords="offset points",
-        ha="center",
-        va="top",
-    )
-    template.interpolant_axes.annotate(
-        r"$F(x_t)$",
-        (0, x_01),
-        (5, 5),
+        (0, 5),
         textcoords="offset points",
         ha="left",
         va="bottom",
     )
-    template.interpolant_axes.annotate(
-        r"$x_0$",
-        (0, x_02),
-        (5, -5),
-        textcoords="offset points",
-        ha="left",
-        va="top",
-    )
+    template.interpolant_axes.annotate(r"$F$", (0.25, 2.7))
+    template.interpolant_axes.annotate(r"$f_\theta$", (0.27, -0.1))
     if output_path is not None:
         template.figure.savefig(
-            os.path.join(output_path, f"consistency_model_integration.svg"),
+            os.path.join(output_path, f"consistency_models_integration.svg"),
             format="SVG",
         )
     return template
@@ -841,19 +840,30 @@ def plot_graphical_models(output_path):
 
 
 if __name__ == "__main__":
+    task = sys.argv[1]
     output_path = os.path.join(lib.pages_dir(), "diffusion")
-    plot_diffusion(output_path)
-    plot_probability_flow(CosineNoiseSchedule(), output_path)
-    plot_p_and_score(output_path)
-    plot_graphical_models(output_path)
-    for i, t_point in enumerate([0.1, 0.4, 0.6, 0.9]):
-        plot_slope_distribution(
-            t_point=t_point, output_tag=str(i), output_path=output_path
-        )
-    plot_consistency_model_integration(
-        os.path.join(lib.pages_dir(), "consistency_models")
-    )
-    plot_probability_flow(
-        LinearNoiseSchedule(),
-        os.path.join(lib.pages_dir(), "consistency_models"),
-    )
+    match task:
+        case "diffusion":
+            plot_diffusion(output_path)
+        case "probability_flow":
+            plot_probability_flow(CosineNoiseSchedule(), output_path)
+        case "p_and_score":
+            plot_p_and_score(output_path)
+        case "graphical_models":
+            plot_graphical_models(output_path)
+        case "slope_distribution":
+            for i, t_point in enumerate([0.1, 0.4, 0.6, 0.9]):
+                plot_slope_distribution(
+                    t_point=t_point, output_tag=str(i), output_path=output_path
+                )
+        case "consistency_models_integration":
+            plot_consistency_models_integration(
+                os.path.join(lib.pages_dir(), "consistency_models")
+            )
+        case "consistency_models_probability_flow":
+            plot_probability_flow(
+                LinearNoiseSchedule(),
+                os.path.join(lib.pages_dir(), "consistency_models"),
+            )
+        case _:
+            raise ValueError(f"Unknown task: {task}")

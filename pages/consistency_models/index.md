@@ -85,29 +85,66 @@ average slope of all the lines connecting $$x_0\sim\mathrm{Data}$$ and
 $$x_1\sim\normal{0}{I}$$ that pass through $$x_t$$. This is illustrated in the
 figure below.
 <figure>
-<img src="/pages/diffusion/slope_distribution_1.svg" 
-     alt="Illustrate the relationship between the probability flow and the slope distribution" 
+<img src="/pages/diffusion/slope_distribution_1.svg"
+     alt="Illustrate the relationship between the probability flow and the slope distribution"
      style="max-width:7in" id="img-slope-distribution"/>
 </figure>
 
 ## Inductive learning
 
-The training of consistency models uses a loose form of mathematical induction
-in interpolation time $$t$$. 
+The training of consistency models uses a loose form of mathematical induction:
+assume that a solution exists for interpolation time $$t$$, and use it to
+construct a solution for time $$t + \Delta t$$.
 
-As a sketch, assume that the problem has been solved for a certain value $$t$$
-of the interpolation time: a teacher model $$F$$ has been obtained that can
-predict the starting point of the flow trajectory passing through any point
-$$x_t$$:
+<figure>
+<img src="consistency_models_integration.svg"
+     alt="One step of the inductive process"
+     style="max-width:7in"/>
+</figure>
+
+With reference to the diagram above, let $$x_0 \sim \mathrm{Data}$$, $$x_1 \sim
+\normal{0}{I}$$. When $$\alpha$$ and $$\sigma$$ are linear, the interpolant
+$$x_t|x_0, x_1$$ lies on the line from $$x_0$$ to $$x_1$$.
+
+Assume that a <i>target network</i> $$F$$ has been obtained that can predict the
+starting point of any flow trajectory given its value $$x_t$$ at some fixed time
+$$t$$. If we can construct a point <i>on the same trajectory</i> at later time
+$$t + \Delta t$$, we can use the output of the target network as a regression
+target for an <i>online network</i>  $$f_\theta$$ that predicts the the starting
+point given $$x_{t + \Delta t}$$.
+
+The two points $$x_t$$ and $$x_{t + \Delta t}$$ can be constructed to lie on the
+same trajectory in two ways:
+
+1. If the two points $$x_t$$ and $$x_{t + \Delta t}$$ are chosen to lie on the same
+line from $$x_0$$ to $$x_1$$, they are not on the same trajectory, but they are
+<i>almost</i> on the same trajectory. More precisely, in expectation, the
+difference between the starting points $$h^{-1}(x_t)$$ and $$h^{-1}(x_{t +
+\Delta t})$$ is of order $$\Delta t^2$$. This approach is dubbed training <i>in isolation</i>.
+
+2. Alternatively, a separate model can be trained to predict the tangent to the
+trajectory. The training objective for this model is essentially [denoising
+score matching](/pages/diffusion#section-denoising-score-matching), and
+consistency models paired with this approach can be seen as distilling a
+standard diffusion model into a more efficent few-step sampler. The error
+involved in this approach is also of order $$\Delta t^2$$.
+
+In both cases, since the solution at $$t = 1$$ is obtained by repeating
+induction $$1 / \Delta t$$ times, the final error is of order $$\Delta t$$, and
+can be made arbitrarily small.
+
+
+In practice, all the induction steps are trained simultaneously, with a single
+model $$f_\theta(t, x_t)$$ serving as online network for all times, and an
+exponential moving average $$f_{\theta^{-}}$$ of the same serving as target
+network. Explicitly, when trainining in isolation, the loss is:
 \begin{equation}
-F(x_t) = h^{-1}_t(x_t)\,.
+L(\theta) = \expectation{t, x_0, x_1}{\norm{f_{\theta}(t + \Delta t, x_t + (x_1 - x_0) \Delta t) - f_{\theta^{-}}(t, x_t)}^2}\,.
 \end{equation}
 
-The output of the teacher model can be used as a regression target for a student
-model $$f_\theta$$ that solves the problem for a later time $$t + \Delta t$$.
-That is, the student model is driven to match the teacher output for pair of
-points $$x_t$$, $$x_{t + \Delta t}$$ belonging to the same probability flow
-trajectory:
+
+## Proofs
+
 <p>
 \begin{equation}
 L(\theta) = \expectation{x_t}{\norm{f_{\theta}(x_{t + \Delta t}) - F(x_t)}^2}\,.
@@ -120,19 +157,14 @@ can be obtained by Euler integration of the flow matching ODE:
      x_{t + \Delta t} = x_t + \expectation{x_0, x_1|x_t}{x_1 - x_0}\ \Delta t + O(\Delta t^2)\,.
 \end{equation}
 However, a naive application of this idea leads to intractable nested
-expectation values in the loss. This difficulty can be circumvented in two ways. 
+expectation values in the loss. This difficulty can be circumvented in two ways.
 
-One way is to train a separate model to predict $$E[x_1 - x_0]$$. The training
-objective for this model is essentially 
-[denoising score matching](/pages/diffusion#section-denoising-score-matching).
-Within this approach, consistency models is a technique for distilling a
-diffusion model into a more efficent few-step sampler.
 
 A second way is to move the inner expectation outwards. Assuming the model is
 twice differentiable, the error incurred in doing so is of order $$\Delta t^2$$,
 the same as the discretization error in Euler integration:
 \begin{equation}
-f_{\theta}(x_t + \expectation{}{x_1 - x_0}\ \Delta t) = 
+f_{\theta}(x_t + \expectation{}{x_1 - x_0}\ \Delta t) =
 \expectation{}{f_{\theta}(x_t + (x_1 - x_0)\ \Delta t)} + O(\Delta t^2)\,.
 \end{equation}
 
@@ -144,16 +176,6 @@ L(\theta) = \expectation{x_0, x_1}{\norm{f_{\theta}(x_t + (x_1 - x_0)\Delta t) -
 \end{equation}
 </p>
 
-The diagram below illustrates this loss. Ideally, the student model map the
-point $$x_{t + \Delta t}$$ to the starting point of the trajectory $$x_0$$.
-However, this target is not available, and the output $$x_0'$$ of the teacher
-model is used instead. The input $$x_t$$ to the teacher model is obtained
 
-
-<figure>
-<img src="consistency_model_integration.svg"
-     alt="One step of the inductive process"
-     style="max-width:7in"/>
-</figure>
 
 {% include references.md %}
