@@ -639,6 +639,7 @@ def plot_consistency_models_integration(output_path: str):
             shrinkA=10,
             shrinkB=10,
             edgecolor="royalblue",
+            zorder=10,
         )
     )
     template.interpolant_axes.add_artist(
@@ -695,7 +696,7 @@ def plot_consistency_models_integration(output_path: str):
         ha="left",
         va="bottom",
     )
-    template.interpolant_axes.annotate(r"$F$", (0.25, 2.7))
+    template.interpolant_axes.annotate(r"$F_t$", (0.25, 2.7))
     template.interpolant_axes.annotate(r"$f_\theta$", (0.27, -0.1))
     if output_path is not None:
         template.figure.savefig(

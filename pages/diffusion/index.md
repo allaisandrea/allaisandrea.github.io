@@ -287,7 +287,8 @@ yields samples of lower quality as measured by FID.
 \end{equation}
 </p>
 
-### Score matching loss optimum
+### Score matching loss optimum {#section-proof-unconstrained-optimum}
+
 
 The proposition
 \begin{equation}
