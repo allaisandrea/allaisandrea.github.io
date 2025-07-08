@@ -17,6 +17,7 @@ references:
    title: "Simplifying, Stabilizing and Scaling Continuous-Time Consistency Models"
    year: 2025
    url: http://arxiv.org/abs/2410.11081
+script: "/pages/diffusion/script.js"
 ---
 
 # Consistency models
@@ -143,7 +144,8 @@ $$x_t|x_0, x_1$$ lies on the line from $$x_0$$ to $$x_1$$.
 <figure>
 <img src="consistency_models_integration.svg"
      alt="One step of the inductive process"
-     style="max-width:7in"/> 
+     style="max-width:7in"
+     id="img-slope-distribution" />
 </figure>
 
 
