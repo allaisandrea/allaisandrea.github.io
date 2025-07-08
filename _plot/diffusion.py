@@ -1,4 +1,5 @@
 from typing import Callable, Sequence
+import sys
 import abc
 import os
 import dataclasses
@@ -7,6 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy
 import matplotlib
+from matplotlib.path import Path
 import lib
 
 
@@ -440,6 +442,7 @@ def make_interpolant_plot_template(
     template.data_pdf_axes.set_ylabel("$x$")
     template.data_pdf_axes.grid()
     template.noise_pdf_axes.grid()
+    template.schedule_axes.grid()
     template.interpolant_axes.set_xlim(*t_range)
     template.interpolant_axes.set_ylim(*x_range)
     template.interpolant_axes.set_aspect("auto")
@@ -473,9 +476,11 @@ def plot_diffusion(output_path: str | None) -> InterpolantPlotTemplate:
     return template
 
 
-def plot_probability_flow(output_path: str | None) -> InterpolantPlotTemplate:
+def plot_probability_flow(
+    noise_schedule: NoiseSchedule, output_path: str | None
+) -> InterpolantPlotTemplate:
     interpolant = GaussianMixtureInterpolant(
-        noise_schedule=CosineNoiseSchedule(),
+        noise_schedule=noise_schedule,
         x0_distr=GaussianMixture(
             means=np.array([-1.0, 2.0]),
             stddevs=np.array([0.1, 0.1]),
@@ -567,6 +572,136 @@ def plot_slope_distribution(
         assert output_tag is not None
         template.figure.savefig(
             os.path.join(output_path, f"slope_distribution_{output_tag}.svg"),
+            format="SVG",
+        )
+    return template
+
+
+def plot_consistency_models_integration(output_path: str):
+    interpolant = GaussianMixtureInterpolant(
+        noise_schedule=LinearNoiseSchedule(),
+        x0_distr=GaussianMixture(
+            means=np.array([-1.0, 2.0]),
+            stddevs=np.array([0.1, 0.1]),
+            weights=np.array([0.8, 0.2]),
+        ),
+    )
+
+    nt = 2048
+    trajectory_t, trajectory_x = interpolant.compute_probability_flow_trajectory(
+        x_1=scipy.stats.norm.ppf(compute_bin_centers(0, 1.0, 8)),
+        nt=nt,
+    )
+
+    t1 = 0.5
+    i1, j1 = int(nt * (1 - t1)), 7
+    t2 = 0.7
+    i2, j2 = int(nt * (1 - t2)), 6
+    t1 = trajectory_t[i1]
+    t2 = trajectory_t[i2]
+    x_t1 = trajectory_x[i1, j1]
+    x_t2 = trajectory_x[i2, j2]
+    x_01 = trajectory_x[-1, j1]
+    x_02 = trajectory_x[-1, j2]
+    line_x0 = (t2 * x_t1 - t1 * x_t2) / (t2 - t1)
+    line_x1 = ((1 - t1) * x_t2 - (1 - t2) * x_t1) / (t2 - t1)
+    template = make_interpolant_plot_template(interpolant, x_range=(-2, 4))
+    plot_schedule(template.schedule_axes, interpolant.noise_schedule)
+    template.interpolant_axes.plot(
+        trajectory_t, trajectory_x, c="lightgray", linewidth=1.0
+    )
+    template.interpolant_axes.plot(
+        trajectory_t[i1:], trajectory_x[i1:, j1], c="black", linewidth=1.5
+    )
+    template.interpolant_axes.plot(
+        trajectory_t[i2:],
+        trajectory_x[i2:, j2],
+        c="black",
+        linewidth=1.5,
+        linestyle="--",
+    )
+    template.interpolant_axes.plot(
+        [0, 1],
+        [line_x0, line_x1],
+        c="orangered",
+        linewidth=1.0,
+        marker="o",
+        markersize=5,
+        markerfacecolor="orangered",
+        markeredgecolor="orangered",
+    )
+    template.interpolant_axes.add_artist(
+        matplotlib.patches.FancyArrowPatch(
+            posA=(trajectory_t[i1], trajectory_x[i1, j1]),
+            posB=(trajectory_t[-1], trajectory_x[-1, j1]),
+            arrowstyle="->",
+            connectionstyle="arc3,rad=0.4",
+            mutation_scale=15,
+            shrinkA=10,
+            shrinkB=10,
+            edgecolor="royalblue",
+            zorder=10,
+        )
+    )
+    template.interpolant_axes.add_artist(
+        matplotlib.patches.FancyArrowPatch(
+            posA=(trajectory_t[i2], trajectory_x[i2, j2]),
+            posB=(trajectory_t[-1], trajectory_x[-1, j2]),
+            arrowstyle="->",
+            connectionstyle="arc3,rad=-0.3",
+            mutation_scale=15,
+            shrinkA=10,
+            shrinkB=10,
+            edgecolor="royalblue",
+            zorder=10,
+        )
+    )
+    template.interpolant_axes.plot(
+        [0, 0, t1, t2],
+        [x_01, x_02, x_t1, x_t2],
+        linestyle="none",
+        marker="o",
+        markersize=5,
+        markerfacecolor="k",
+        markeredgecolor="k",
+    )
+    template.interpolant_axes.annotate(
+        "$x_0$",
+        (0, line_x0),
+        (5, 5),
+        textcoords="offset points",
+        ha="left",
+        va="bottom",
+    )
+    template.interpolant_axes.annotate(
+        "$x_1$",
+        (1, line_x1),
+        (-5, -5),
+        textcoords="offset points",
+        ha="right",
+        va="top",
+    )
+    template.interpolant_axes.annotate(
+        "$x_t$",
+        (t1, x_t1),
+        (0, 5),
+        textcoords="offset points",
+        ha="center",
+        va="bottom",
+    )
+    template.interpolant_axes.annotate(
+        r"$x_{t + \Delta t}$",
+        (t2, x_t2),
+        (0, 5),
+        textcoords="offset points",
+        ha="left",
+        va="bottom",
+    )
+    template.interpolant_axes.annotate(r"$F_t$", (0.25, 2.7))
+    template.interpolant_axes.annotate(r"$f_\theta$", (0.27, -0.1))
+    if output_path is not None:
+        template.figure.savefig(
+            os.path.join(output_path, f"consistency_models_integration.svg"),
             format="SVG",
         )
     return template
@@ -707,11 +842,30 @@ def plot_graphical_models(output_path):
 
 
 if __name__ == "__main__":
+    task = sys.argv[1]
     output_path = os.path.join(lib.pages_dir(), "diffusion")
-    plot_diffusion(output_path)
-    plot_p_and_score(output_path)
-    plot_graphical_models(output_path)
-    for i, t_point in enumerate([0.1, 0.4, 0.6, 0.9]):
-        plot_slope_distribution(
-            t_point=t_point, output_tag=str(i), output_path=output_path
-        )
+    match task:
+        case "diffusion":
+            plot_diffusion(output_path)
+        case "probability_flow":
+            plot_probability_flow(CosineNoiseSchedule(), output_path)
+        case "p_and_score":
+            plot_p_and_score(output_path)
+        case "graphical_models":
+            plot_graphical_models(output_path)
+        case "slope_distribution":
+            for i, t_point in enumerate([0.1, 0.4, 0.6, 0.9]):
+                plot_slope_distribution(
+                    t_point=t_point, output_tag=str(i), output_path=output_path
+                )
+        case "consistency_models_integration":
+            plot_consistency_models_integration(
+                os.path.join(lib.pages_dir(), "consistency_models")
+            )
+        case "consistency_models_probability_flow":
+            plot_probability_flow(
+                LinearNoiseSchedule(),
+                os.path.join(lib.pages_dir(), "consistency_models"),
+            )
+        case _:
+            raise ValueError(f"Unknown task: {task}")
