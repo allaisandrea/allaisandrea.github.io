@@ -154,7 +154,7 @@ time $$t + \Delta t$$, we can use the output of the target network as a
 regression target for an <i>online network</i>  $$f_\theta$$ that predicts
 the starting point given $$x_{t + \Delta t}$$.
 
-The two points $$x_t$$ and $$x_{t + \Delta t}$$ can be constructed to lie on
+Two points $$x_t$$ and $$x_{t + \Delta t}$$ can be constructed to lie on
 the same trajectory in two ways:
 
 1. If the two points $$x_t$$ and $$x_{t + \Delta t}$$ are chosen to lie on the

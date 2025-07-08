@@ -442,6 +442,7 @@ def make_interpolant_plot_template(
     template.data_pdf_axes.set_ylabel("$x$")
     template.data_pdf_axes.grid()
     template.noise_pdf_axes.grid()
+    template.schedule_axes.grid()
     template.interpolant_axes.set_xlim(*t_range)
     template.interpolant_axes.set_ylim(*x_range)
     template.interpolant_axes.set_aspect("auto")
