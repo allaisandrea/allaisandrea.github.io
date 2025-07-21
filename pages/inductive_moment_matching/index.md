@@ -31,3 +31,8 @@ online network that does t + dt -> 0 -> s.
 
 Why does the IMM model depend on both t and s? It seems that adding s is
 redundant. Check this empirically.
+
+There is no need to ensure r and t are on the same trajectory, because the
+matching happens at the level of distributions, not points.
+
+Does supervision at s > 0 help with single-step sampling?
