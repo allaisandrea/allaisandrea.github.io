@@ -1,16 +1,7 @@
---- layout: default title: Thermodynamics --- 
-
-# Entropy
-
-System with many states.
-
-Group states.
-
-Continuous systems are tricky.
-
-Justify phase-space volume.
-
-Entropy measures the size of a group. It's logarithmic so it's extensive.
+---
+layout: default
+title: Thermodynamics
+---
 
 # Microcanonical ensemble
 
@@ -39,9 +30,17 @@ The largest subgroups dominate the probability distribution.
 
 To first order, entropy is maximized, Then there are fluctations.
 
+Fluctuations are small because the distribution of macroscopic quantities is
+narrow, so a few macrostates take up most of the probabilty. This is because
+macroscopic quantities are extensive, locally independent, and so the central
+limit applies. If you consider a volume of phase space that contains only one
+particle on average, and group by the number of particles in the volume, the
+fluctuations will be big.
+
 Because of time-reversal symmetry, entropy most likely decreases both forward
 and backward in time. Which means that most points of lower entropy are minima,
-instead of on the path towards higher or lower entropy. 
+instead of on the path towards higher or lower entropy. This means that the
+time series of entropy is fractal.
 
 The universe is not at maximum entropy because it's not done yet.
 
@@ -49,6 +48,32 @@ The universe is not at maximum entropy because it's not done yet.
 
 Allow two system to exchange energy -> same dS/dE. Then dS/dE is the
 temperature.
+
+Energy flows from high to low temperature.
+
+For classical systems temperature must be positive or they will blow up to
+maximize entropy.
+
+# Pressure
+
+In a piston scenario, the mechanical work done on the system is $$-p \dd V$$.
+Assuming an adiabatic process means that this is equal to the change in
+internal energy: there can be no heat transfer.
+
+The maximum entropy principle then is
+\begin{equation}
+0 = dS = \frac{\partial S}{\partial E} (-p \dd V) + \frac{\partial{S}}{\partial V} \dd V
+\end{equation}
+which implies
+\begin{equation}
+p = T \left.\frac{\partial{S}}{\partial V}\right|_E
+\end{equation}
+
+From this you can also obtain
+\begin{equation}
+p = \left.\frac{\partial E}{\partial V}\right|_S
+\end{equation}
+
 
 # Canonical ensemble
 
