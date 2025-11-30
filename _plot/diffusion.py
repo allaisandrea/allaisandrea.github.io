@@ -745,56 +745,6 @@ def plot_p_and_score(output_path: str | None) -> matplotlib.figure.Figure:
     return figure
 
 
-@dataclasses.dataclass
-class Node:
-    coords: tuple[float, float]
-    text: str
-    size: float
-
-
-def plot_node(axes, node: Node):
-    axes.add_patch(
-        matplotlib.patches.Circle(
-            node.coords, node.size, facecolor="none", edgecolor="k"
-        )
-    )
-    axes.text(*node.coords, node.text, ha="center", va="center")
-
-
-def plot_edge(axes, node1: Node, node2: Node):
-    axes.add_patch(
-        matplotlib.patches.FancyArrowPatch(
-            node1.coords,
-            node2.coords,
-            arrowstyle="->",
-            mutation_scale=20,
-            shrinkA=node1.size,
-            shrinkB=node2.size,
-        )
-    )
-
-
-def make_graph_figure(viewport_pts):
-    figure, axes = plt.subplots(
-        1,
-        1,
-        figsize=(viewport_pts[1] - viewport_pts[0]) / 72,
-        dpi=300,
-        gridspec_kw={
-            "left": 0,
-            "right": 1,
-            "top": 1,
-            "bottom": 0,
-        },
-    )
-    axes.set_xlim(*viewport_pts[:, 0])
-    axes.set_ylim(*viewport_pts[:, 1])
-    axes.set_xticks([])
-    axes.set_yticks([])
-    axes.axis("off")
-    return figure, axes
-
-
 def plot_graphical_models(output_path):
     spacing_x = 80
     x_text = [
@@ -814,30 +764,31 @@ def plot_graphical_models(output_path):
         r"$\bar{z}_{2\Delta t}$",
         r"$\bar{z}_{3\Delta t}$",
     ]
-    x_nodes = [Node((spacing_x * i, 0), text, 17) for i, text in enumerate(x_text)]
+    x_nodes = [lib.Node((spacing_x * i, 0), text, 17) for i, text in enumerate(x_text)]
     z_nodes = [
-        Node((spacing_x * (i + 1), 80), text, 17) for i, text in enumerate(z_text)
+        lib.Node((spacing_x * (i + 1), 80), text, 17) for i, text in enumerate(z_text)
     ]
     zbar_nodes = [
-        Node((spacing_x * (i + 1), 80), text, 17) for i, text in enumerate(zbar_text)
+        lib.Node((spacing_x * (i + 1), 80), text, 17)
+        for i, text in enumerate(zbar_text)
     ]
 
-    figure, axes = make_graph_figure(np.array([[-20, -20], [310, 100]]))
+    figure, axes = lib.make_graph_figure(np.array([[-20, -20], [310, 100]]))
     for node in x_nodes[:-1] + z_nodes:
-        plot_node(axes, node)
+        lib.plot_node(axes, node)
     for node1, node2 in zip(x_nodes[:-1], x_nodes[1:]):
-        plot_edge(axes, node1, node2)
+        lib.plot_edge(axes, node1, node2)
     for node1, node2 in zip(z_nodes, x_nodes[1:]):
-        plot_edge(axes, node1, node2)
+        lib.plot_edge(axes, node1, node2)
     figure.savefig(os.path.join(output_path, "forward_process.png"))
 
-    figure, axes = make_graph_figure(np.array([[-20, -20], [310, 100]]))
+    figure, axes = lib.make_graph_figure(np.array([[-20, -20], [310, 100]]))
     for node in x_nodes[:-1] + zbar_nodes:
-        plot_node(axes, node)
+        lib.plot_node(axes, node)
     for node2, node1 in zip(x_nodes[:-1], x_nodes[1:]):
-        plot_edge(axes, node1, node2)
+        lib.plot_edge(axes, node1, node2)
     for node1, node2 in zip(zbar_nodes, x_nodes[:-1]):
-        plot_edge(axes, node1, node2)
+        lib.plot_edge(axes, node1, node2)
     figure.savefig(os.path.join(output_path, "backward_process.png"))
 
 
