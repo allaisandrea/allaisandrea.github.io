@@ -15,6 +15,9 @@ Argument:
 
 A subtlety to iron out: The delta functions induced by conserved quantities.
 
+Note: entropy is the log PDF, the PDF depends on the choice of coordinates, so
+the choice must be justified. This is related to Barnard's paradox.
+
 Relatedly, integrable systems divide into multiple mutually unreachable parts,
 because of the many conserved quantities.
 
