@@ -16,11 +16,11 @@ def plot_graphical_model(output_path: str):
     spacing_x = 80
     s_nodes = [
         lib.Node((spacing_x * i, 60), text, 17)
-        for i, text in enumerate([r"$s_0$", r"$s_1$", r"$s_2$", r"$s_3$", ""])
+        for i, text in enumerate([r"$\mathbf{s}_0$", r"$\mathbf{s}_1$", r"$\mathbf{s}_2$", r"$\mathbf{s}_3$", ""])
     ]
     a_nodes = [
         lib.Node((spacing_x * (i + 0.5), 0), text, 17)
-        for i, text in enumerate([r"$a_0$", r"$a_1$", r"$a_2$", ""])
+        for i, text in enumerate([r"$\mathbf{a}_0$", r"$\mathbf{a}_1$", r"$\mathbf{a}_2$", ""])
     ]
 
     figure, axes = lib.make_graph_figure(np.array([[-20, -20], [310, 80]]))
