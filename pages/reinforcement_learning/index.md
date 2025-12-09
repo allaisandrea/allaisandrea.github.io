@@ -45,7 +45,9 @@ denote its PDF/PMF with:
 \pi(a | s, t) = \mathrm{Prob}\left[\mathbf{a}_t = a | \mathbf{s}_t = s \right]
 \end{equation}</p>
 
-It is usually assumed that the policy does not depend on time: 
-$$\pi(a |s, t) = \pi(a | s)$$.
+It is usually assumed that the policy does not depend on time: $$\pi(a |s, t) =
+\pi(a | s)$$. While it is possible to include time in the state variable $$s$$,
+that would imply that no state can be visited more than once, which would
+preclude most estimation algorithm.
 
 
