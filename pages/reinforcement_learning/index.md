@@ -159,7 +159,8 @@ however, I have not found a convincing proof yet.
 ### Policy evaluation {#section-policy-evaluation}
 
 The state-value function necessary for policy iteration can be computed
-efficiently as the fixed point of the following recursion relation:
+efficiently as the fixed point of the following recursion relation
+([proof](#section-proofs-policy-evaluation)):
 
 <p>\begin{equation}
 V_{\pi,\, k + 1}(s) = \expectation{\pi}{\mathbf{r}_0 +
@@ -210,21 +211,56 @@ where the expectation does not depend on the policy because of the conditioning.
 
 ## Proofs
 
-### Bellman equation and policy evaluation
+### Bellman equation and policy evaluation {#section-proofs-policy-evaluation}
 
 First we prove that the state value function satisfies the following functional
 equation, a type of Bellman equation:
 <p>\begin{equation}
-V_\pi(s) = \expectation{\pi}{\mathrm{r}_0 + \gamma V_\pi(\mathbf{s}_1)\big|\mathbf{s}_0 = s}\,.
+V_\pi(s) = \expectation{\pi}{\mathbf{r}_0 + \gamma V_\pi(\mathbf{s}_1)\big|\mathbf{s}_0 = s}\,.
 \end{equation}</p>
 
-This is because the value functions satisfy the following functional equations,
-a type of Bellman equation:
+The proof works by separating the contribution from $$t = 0$$ and rewriting the
+remainder again in terms of the value function.
+
+<p>\begin{split}
+V_\pi(s) & = \sum_{t = 0}^{\infty} \gamma^t\,
+\expectation{\pi}{\mathbf{r}_t \Big| \mathbf{s}_0 = s} \\
+& = \expectation{\pi}{\mathbf{r}_0 \big|\mathbf{s}_0 = s} +
+\sum_{t = 1}^{\infty} \gamma^t\,
+\expectation{\pi}{\mathbf{r}_t \Big| \mathbf{s}_0 = s} \\
+& = \expectation{\pi}{\mathbf{r}_0 \big|\mathbf{s}_0 = s} + \gamma\,
+\sum_{t = 0}^{\infty} \gamma^t\,
+\expectation{\pi}{\mathbf{r}_{t + 1} \Big| \mathbf{s}_0 = s} \\
+& = \expectation{\pi}{\mathbf{r}_0 \big|\mathbf{s}_0 = s} + \gamma\,
+\sum_{t = 0}^{\infty} \gamma^t\, \sum_{a_0, s_1} \pi(a_0 | s)
+p(s_1 | s, a_0) \expectation{\pi}{\mathbf{r}_{t + 1} \Big| \mathbf{s}_1 = s_1}
+\end{split}</p>
+
+Now we use the fact that the conditional distributions do not depend on time to
+shift the time index inside the expectation:
+
+<p>\begin{split}
+V_\pi(s) & = \expectation{\pi}{\mathbf{r}_0 \big|\mathbf{s}_0 = s} + \gamma\,
+\sum_{t = 0}^{\infty} \gamma^t\, \sum_{a_0, s_1} \pi(a_0 | s)
+p(s_1 | s, a_0) \expectation{\pi}{\mathbf{r}_{t} \Big| \mathbf{s}_0 = s_1} \\
+& = \expectation{\pi}{\mathbf{r}_0 \big|\mathbf{s}_0 = s} + \gamma\,
+\sum_{a_0, s_1} \pi(a_0 | s)
+p(s_1 | s, a_0) \sum_{t = 0}^{\infty} \gamma^t\,
+\expectation{\pi}{\mathbf{r}_{t} \Big| \mathbf{s}_0 = s_1} \\
+& = \expectation{\pi}{\mathbf{r}_0 \big|\mathbf{s}_0 = s} + \gamma\,
+\sum_{a_0, s_1} \pi(a_0 | s)
+p(s_1 | s, a_0) V(s_1) \\
+& = \expectation{\pi}{\mathbf{r}_0 \big|\mathbf{s}_0 = s} + \gamma\,
+\expectation{\pi}{V(s_1) \big | \mathbf{s}_0 = s} \,.
+\end{split} </p>
+
+The Bellman equation is the fixed point equation of the recursion relation:
 <p>\begin{equation}
-Q_\pi(s, a) = r(s, a) + \gamma\, \expectation{\pi}
-{Q_\pi(\mathbf{s}_1, \mathrm{a}_1)\big|\mathbf{s}_0 = s,\, \mathbf{a}_0 = a}\,,
+V_{\pi,\, k + 1}(s) = \expectation{\pi}{\mathbf{r}_0 +
+\gamma V_{\pi,\, k}(\mathbf{s}_1)|\mathbf{s}_0 = s}\,.
 \end{equation}</p>
-<p>\begin{equation}
-V_\pi(s) = \expectation{\pi}{r(\mathrm{s}_0, \mathrm{a}_0) + \gamma V_\pi(\mathbf{s}_1, \mathbf{a}_1)\big|\mathbf{s}_0 = s}\,.
-\end{equation}</p>
-which are also the fixed point equations of the recursion relation above.
+
+It is however necessary to show that the fixed point exists and is unique. This
+is done by proving that the conditions for the Banach fixed point theorem are
+met.
+
