@@ -23,22 +23,33 @@ The interaction of the agent and its environment is modeled as a Markov decision
 process. This is a probabilistic model described by the graphical model below,
 
 <figure>
-<img src="graphical_model.svg" alt="Graphical model" style="max-width:5in"/>
+<img src="graphical_model.svg" alt="Graphical model" style="max-width:5in;border:none"/>
 </figure>
 
 where:
 
 * $$\mathbf{s}_t$$ is a random variable representing the state of the
-  environment at time $$t$$,
+  environment at time $$t$$.
 
 * $$\mathbf{a}_t$$ is a random variable representing the action performed by the
-  agent at time $$t$$,
+  agent at time $$t$$.
 
-* the agent action $$\textbf{a}_t$$ at time $$t$$ depends on the state of the
-  world $$\mathbf{s}_t$$,
+* $$\mathbf{r}_t$$ is a random variable representing a reward that the agent
+   receives upon taking an action.
 
-* the state of the world $$\mathbf{s}_{t + 1}$$ depends on the previous state
+* The agent action $$\textbf{a}_t$$ at time $$t$$ depends on the state of the
+  world $$\mathbf{s}_t$$.
+
+* The state of the world $$\mathbf{s}_{t + 1}$$ depends on the previous state
   $$\mathbf{s}_t$$ and on the previous agent action $$\mathbf{a}_t$$.
+
+* The reward $$\mathbf{r}_t$$ depends on the state $$\mathbf{s}_t$$ and the action $$\mathbf{a}_t$$. It may be stochastic, but most
+   commonly it is a deterministic function of the state alone.
+
+* The conditional distributions $$(\mathbf{a}_t | \mathbf{s}_t)$$,
+  $$(\mathbf{r}_t | \mathbf{s}_t, \mathbf{a}_t)$$, and
+  $$(\mathbf{s}_{t + 1} | \mathbf{s}_t, \mathbf{a}_t)$$
+  do not depend on time.
 
 The conditional distribution of the agent actions is called _policy_, and we
 denote its PDF/PMF by:
@@ -47,47 +58,38 @@ denote its PDF/PMF by:
 \pi(a | s) = \mathrm{Prob}\left[\mathbf{a}_t = a | \mathbf{s}_t = s \right]\,.
 \end{equation}</p>
 
-We denote the PDF/PMF of the conditional distribution of the environment state by:
-
-<p>\begin{equation}
-p(s' | s, a) = \mathrm{Prob}\left[\mathbf{s}_{t + 1} = s' | \mathbf{s}_t = s, \mathbf{a}_t = a \right]\,.
-\end{equation}</p>
-
-It is assumed that neither depends on the time $$t$$.
-
-Upon taking action $$a$$ from state $$s$$, the agent receives a reward
-$$r(s, a)$$. The reward may be stochastic, in which case $$r(s, a)$$ stands for
-its conditional expected value. Most commonly, the reward is a deterministic
-function of the state.
-
 The goal of reinforcement learning is to obtain a policy that maximizes the
 expected total discounted reward:
 
 <p>\begin{equation}
-\eta(\pi) = \expectation{\pi}{\sum_{t = 0}^{\infty} \gamma^t
-r(\mathbf{s}_t, \mathbf{a}_t)}\,,
+\eta(\pi) = \expectation{\pi}{\sum_{t = 0}^{\infty} \gamma^t \mathbf{r}_t}\,,
 \end{equation}</p>
 
 where $$\gamma \in [0, 1)$$ is a discount factor that reduces the present value
-of rewards in the far future.
+of future rewards.
 
-## Policy iteration algorithm
+## Dynamic programming algorithms
 
 If states and actions belong to a finite set, what is called a _finite_ Markov
-decision process, an efficient algorithm for optimizing the policy is _policy
-iteration_. The algorithm is based on the _state-value function_:
+decision process, a suite of efficient policy-optimization algorithms exists,
+belonging to the general class of _dynamic programming_ algorithms.
+
+### Value functions
+
+Dynamic programming algorithms for reinforcement learning are based on _value
+functions_, which summarize all the necessary information about future rewards
+in a single value. These are the _state-value function_:
 
 <p>\begin{equation}
 V_\pi(s) = \expectation{\pi}{\sum_{t = 0}^{\infty} \gamma^t
-r(\mathbf{s}_t, \mathbf{a}_t) \Big| \mathbf{s}_0 = s}\,,
+\mathbf{r}_t \Big| \mathbf{s}_0 = s}\,,
 \end{equation}</p>
 
 and the _action-value function_:
 
 <p>\begin{equation}
 Q_\pi(s, a) = \expectation{\pi}{\sum_{t = 0}^{\infty} \gamma^t
-r(\mathbf{s}_t, \mathbf{a}_t) \Big|
-\mathbf{s}_0 = s,\, \mathbf{a}_0 = a}\,.
+\mathbf{r}_t \Big| \mathbf{s}_0 = s,\, \mathbf{a}_0 = a}\,.
 \end{equation}</p>
 
 The state-value function assigns to each state $$s$$ the expected total
@@ -96,85 +98,133 @@ policy $$\pi$$. The action-value assign to each pair $$(s, a)$$ the reward
 that can be obtained by starting from $$s$$, taking action $$a$$ and then
 following the policy $$\pi$$.
 
-The two are related by:
-<p>\begin{equation}
-Q_\pi(s, a) = r(s, a) + \gamma\, \expectation{}
-{V_\pi(\mathbf{s}_1)\big|\mathbf{s}_0 = s,\, \mathbf{a}_0 = a}\,,\\
-\end{equation}</p>
-<p>\begin{equation}
-V_\pi(s) = \expectation{\pi}{Q_\pi(\mathbf{s}_0, \mathbf{a}_0)\big|\mathbf{s}_0 = s}\,,
-\end{equation}</p>
-where the first expectation does not involve the policy because of the conditioning.
+Dynamic programming algorithms require a complete tabulation of the state value
+function, and are therefore limited in practice to problems with fewer than a
+few billion states.
 
-The optimization algorithm consists of the repeated application of two stages.
-The first stage, called _policy evaluation_ estimates the value $$V_\pi(s)$$ of
-each state, and the second stage, called _policy improvement_ uses the estimated
-values to generate a new policy that is better than the previous one.
+### Policy iteration
 
-### Policy evaluation
-
-The state-value function satisfies the following functional equation, a type of
-Bellman equation:
-<p>\begin{equation}
-V_\pi(s) = \expectation{\pi}{r(\mathbf{s}_0, \mathbf{a}_0) +
-\gamma V_{\pi}(\mathbf{s}_1)|\mathbf{s}_0 = s}\,.
-\end{equation}</p>
-
-The Bellman equation is the fixed point equation for the following recursion
-relation:
-<p>\begin{equation}
-V_{\pi,\, k + 1}(s) = \expectation{\pi}{r(\mathbf{s}_0, \mathbf{a}_0) +
-\gamma V_{\pi,\, k}(\mathbf{s}_1)|\mathbf{s}_0 = s}\,.
-\end{equation}</p>
-
-For a finite Markov decision process with $$\gamma \in [0, 1)$$, the Banach
-fixed point theorem applies, and the recursion relation has a unique fixed
-point. Thus the value function can be computed by iterating the recursion
-relation until convergence. Of course this requires to tabulate the value for
-each possible state, which for moderately complex problems may be infeasible.
-
-The action-value function can be computed from the value function, or,
-alternatively, by recursion from the Bellman equation:
-<p>\begin{equation}
-Q_\pi(s, a) = r(s, a) + \gamma\, \expectation{\pi}{
-Q_{\pi}(\mathbf{s}_1, \mathbf{a}_1)|\mathbf{s}_0 = s, \mathbf{a}_0 = a}\,.
-\end{equation}</p>
-
-
-### Policy improvement
-
-The policy improvement stage operates on deterministic policies $$\pi(a|s) =
-\delta_{a, \pi(s)}$$.
-
-Given policy $$\pi_{k}$$, the improved policy $$\pi_{k + 1}$$ is defined as the
-policy that choses in each state $$s$$ the action $$a$$ that maximizes the
-action value of policy $$\pi_{k}$$:
+Given values for a policy $$\pi_0$$, an improved, deterministic policy $$\pi_1$$
+can be constructed by choosing in each state $$s$$ the action $$a$$ that
+maximizes the action value of policy $$\pi_0$$:
 
 <p>\begin{equation}
-\pi_{k + 1}(s) = \mathrm{argmax}_{a}\left[Q_{\pi_k(s, a)}\right]\,.
+\pi_1(a|s) = \delta_{a, \pi_1(s)}\quad \text{such that}\quad
+Q_{\pi_0}(s, \pi_1(s)) = \mathrm{max}_{a}\left[Q_{\pi_0}(s, a)\right]\,.
 \end{equation}</p>
 
-The policy constructed in this fashion is guaranteed to have value not less than
-$$\pi_k$$ in every state:
+The policy $$\pi_1$$ constructed in this fashion constitutes an improvement over
+$$\pi_0$$ in that it has value not less than $$\pi_0$$ in every state:
 
 <p>\begin{equation}
-V_{\pi_{k + 1}}(s) \geq V_{\pi_k}(s)\quad \forall\, s\,.
+V_{\pi_1}(s) \geq V_{\pi_0}(s)\quad \forall\, s\,,
 \end{equation}</p>
 
-Moreover, the inequality is strict for state $$s$$ if $$\pi_{k + 1}$$ improves
-the action-value function for that state, that is if:
+and consequently the expected total reward $$\eta(\pi_1)$$ is also not less than
+$$\eta(\pi_0)$$.
+
+Moreover, the inequality is strict for state $$s$$ if $$\pi_1$$ improves
+the action-value of $$\pi_0$$ for that state, that is if:
 
 <p>\begin{equation}
-Q_{\pi_k}(s, \pi_{k + 1}(s)) = \mathrm{max}_a Q_{\pi_k}(s, a) > Q_{\pi_k}(s, \pi_k(s))\,.
+\mathrm{max}_a Q_{\pi_0}(s, a) > Q_{\pi_0}(s, \pi_0(s))\,,
 \end{equation}</p>
 
-If policy $$\pi_{k + 1}$$ has the same action-value as $$\pi_k$$ for all states,
-the policy improvement algorithm has converged.
+where we have assumed that $$\pi_0$$ is also deterministic. If $$\pi_0$$ is not
+deterministic, the the condition for strict improvement is:
+<p>\begin{equation}
+\mathrm{max}_a Q_{\pi_0}(s, a) > \expectation{\pi_0}{Q_{\pi_0}(\mathbf{s}_0, \mathbf{a}_0)
+\big| \mathbf{s}_0 = s}\,,
+\end{equation}</p>
+and it is always satisfied unless $$\pi_0$$ already assigns weight zero to all
+sub-optimal actions.
 
-### Optimality equation
+Having obtained an improved policy $$\pi_1$$, the process can be repeated, using
+the value functions of $$\pi_1$$ to obtain a further improved policy $$\pi_2$$.
+The process terminates at policy $$\pi_\star$$ when no further improvement is
+possible at any state, because
+<p>\begin{equation}
+\mathrm{max}_a Q_{\pi_\star}(s, a) = Q_{\pi_\star}(s, \pi_\star(s))\,\quad \forall\, s\,.
+\end{equation}</p>
 
+It is often claimed that the terminal policy is the optimal policy, i.e. that it
+simultaneously maximizes the value at every state:
 
 <p>\begin{equation}
-V_{\pi_\star}(s) = \mathrm{max}_a Q_{\pi_\star}(s, a)
+V_{\pi_\star}(s) = \mathrm{max}_{\pi} V_{\pi}(s)\,,
 \end{equation}</p>
 
+however, I have not found a convincing proof yet.
+
+### Policy evaluation {#section-policy-evaluation}
+
+The state-value function necessary for policy iteration can be computed
+efficiently as the fixed point of the following recursion relation:
+
+<p>\begin{equation}
+V_{\pi,\, k + 1}(s) = \expectation{\pi}{\mathbf{r}_0 +
+\gamma V_{\pi,\, k}(\mathbf{s}_1)|\mathbf{s}_0 = s}\,,
+\end{equation}</p>
+
+which can be shown to exist and be unique.  Then the action values can be
+computed as:
+
+<p>\begin{equation}
+Q_\pi(s, a) =  \expectation{}
+{\mathbf{r}_0 + \gamma V_\pi(\mathbf{s}_1)\big|\mathbf{s}_0 = s,\, \mathbf{a}_0 = a}\,,
+\end{equation}</p>
+
+where the expectation does not depend on the policy because of the conditioning.
+
+### Value iteration
+
+It is not necessary to carry out the policy iteration algorithm explicitly.
+Instead, the state value function of the terminal policy $$\pi_\star$$ can be
+obtained as the fixed point of the recursion relation:
+
+<p>\begin{equation}
+V_{k + 1}(s) = \mathrm{max}_a\, \expectation{}
+{\mathbf{r}_0 + \gamma\,
+V_{k}(\mathbf{s}_1)\big|\mathbf{s}_0 = s,\, \mathbf{a}_0 = a}\,,
+\end{equation}</p>
+
+where the expectation does not depend on the policy because of the conditioning.
+The fixed point can be shown to exist and be unique. The action-value function
+can be obtained from the state value as before, and the terminal policy
+$$\pi_\star$$ is the one that choses the action with maximum value at each
+state.
+
+Alternatively, at the cost of tabulating one value for each state-action pair,
+instead of just for each state, the action-value function of the terminal policy
+can be obtained as the fixed point of the following recursion relation:
+
+<p>\begin{equation}
+Q_{k + 1}(s, a) = \expectation{}
+{\mathbf{r}_0 + \gamma\, \mathrm{max}_{a'}\, Q_{k}(\mathbf{s}_1, a')
+\big|\mathbf{s}_0 = s,\, \mathbf{a}_0 = a}\,,
+\end{equation}</p>
+
+where the expectation does not depend on the policy because of the conditioning.
+
+
+
+## Proofs
+
+### Bellman equation and policy evaluation
+
+First we prove that the state value function satisfies the following functional
+equation, a type of Bellman equation:
+<p>\begin{equation}
+V_\pi(s) = \expectation{\pi}{\mathrm{r}_0 + \gamma V_\pi(\mathbf{s}_1)\big|\mathbf{s}_0 = s}\,.
+\end{equation}</p>
+
+This is because the value functions satisfy the following functional equations,
+a type of Bellman equation:
+<p>\begin{equation}
+Q_\pi(s, a) = r(s, a) + \gamma\, \expectation{\pi}
+{Q_\pi(\mathbf{s}_1, \mathrm{a}_1)\big|\mathbf{s}_0 = s,\, \mathbf{a}_0 = a}\,,
+\end{equation}</p>
+<p>\begin{equation}
+V_\pi(s) = \expectation{\pi}{r(\mathrm{s}_0, \mathrm{a}_0) + \gamma V_\pi(\mathbf{s}_1, \mathbf{a}_1)\big|\mathbf{s}_0 = s}\,.
+\end{equation}</p>
+which are also the fixed point equations of the recursion relation above.
