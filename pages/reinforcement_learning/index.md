@@ -121,30 +121,18 @@ V_{\pi_1}(s) \geq V_{\pi_0}(s)\quad \forall\, s\,,
 \end{equation}</p>
 
 and consequently the expected total reward $$\eta(\pi_1)$$ is also not less than
-$$\eta(\pi_0)$$.
-
-Moreover, the inequality is strict for state $$s$$ if $$\pi_1$$ improves
-the action-value of $$\pi_0$$ for that state, that is if:
+$$\eta(\pi_0)$$. Moreover, the inequality is strict for state $$s$$ if:
 
 <p>\begin{equation}
-\mathrm{max}_a Q_{\pi_0}(s, a) > Q_{\pi_0}(s, \pi_0(s))\,,
+\mathrm{max}_a Q_{\pi_0}(s, a) > V_{\pi_0}(s)\,.
 \end{equation}</p>
-
-where we have assumed that $$\pi_0$$ is also deterministic. If $$\pi_0$$ is not
-deterministic, the the condition for strict improvement is:
-<p>\begin{equation}
-\mathrm{max}_a Q_{\pi_0}(s, a) > \expectation{\pi_0}{Q_{\pi_0}(\mathbf{s}_0, \mathbf{a}_0)
-\big| \mathbf{s}_0 = s}\,,
-\end{equation}</p>
-and it is always satisfied unless $$\pi_0$$ already assigns weight zero to all
-sub-optimal actions.
 
 Having obtained an improved policy $$\pi_1$$, the process can be repeated, using
 the value functions of $$\pi_1$$ to obtain a further improved policy $$\pi_2$$.
 The process terminates at policy $$\pi_\star$$ when no further improvement is
 possible at any state, because
 <p>\begin{equation}
-\mathrm{max}_a Q_{\pi_\star}(s, a) = Q_{\pi_\star}(s, \pi_\star(s))\,\quad \forall\, s\,.
+\mathrm{max}_a Q_{\pi_\star}(s, a) = V_{\pi_\star}(s)\,\quad \forall\, s\,.
 \end{equation}</p>
 
 It is often claimed that the terminal policy is the optimal policy, i.e. that it
@@ -207,8 +195,6 @@ Q_{k + 1}(s, a) = \expectation{}
 
 where the expectation does not depend on the policy because of the conditioning.
 
-
-
 ## Proofs
 
 ### Bellman equation and policy evaluation {#section-proofs-policy-evaluation}
@@ -220,39 +206,51 @@ V_\pi(s) = \expectation{\pi}{\mathbf{r}_0 + \gamma V_\pi(\mathbf{s}_1)\big|\math
 \end{equation}</p>
 
 The proof works by separating the contribution from $$t = 0$$ and rewriting the
-remainder again in terms of the value function.
+remainder again in terms of the value function:
 
 <p>\begin{split}
-V_\pi(s) & = \sum_{t = 0}^{\infty} \gamma^t\,
-\expectation{\pi}{\mathbf{r}_t \Big| \mathbf{s}_0 = s} \\
-& = \expectation{\pi}{\mathbf{r}_0 \big|\mathbf{s}_0 = s} +
-\sum_{t = 1}^{\infty} \gamma^t\,
-\expectation{\pi}{\mathbf{r}_t \Big| \mathbf{s}_0 = s} \\
+V_\pi(s) & =
+\expectation{\pi}{\sum_{t = 0}^{\infty} \gamma^t\,\mathbf{r}_t \Big| \mathbf{s}_0 = s} \\
 & = \expectation{\pi}{\mathbf{r}_0 \big|\mathbf{s}_0 = s} + \gamma\,
-\sum_{t = 0}^{\infty} \gamma^t\,
-\expectation{\pi}{\mathbf{r}_{t + 1} \Big| \mathbf{s}_0 = s} \\
-& = \expectation{\pi}{\mathbf{r}_0 \big|\mathbf{s}_0 = s} + \gamma\,
-\sum_{t = 0}^{\infty} \gamma^t\, \sum_{a_0, s_1} \pi(a_0 | s)
-p(s_1 | s, a_0) \expectation{\pi}{\mathbf{r}_{t + 1} \Big| \mathbf{s}_1 = s_1}
+\expectation{\pi}{\sum_{t = 0}^{\infty} \gamma^t\,\mathbf{r}_{t + 1} \Big| \mathbf{s}_0 = s}\,.
 \end{split}</p>
 
-Now we use the fact that the conditional distributions do not depend on time to
-shift the time index inside the expectation:
+Now we split the expectation as an outer expectation over variables
+$$\mathbf{a}_0$$ and $$\mathbf{s}_1$$, and an inner expectation over variables
+$$\hat{\mathbf{a}}_1,\,\hat{\mathbf{s}}_2,\,\ldots$$, which we denote with a hat
+to avoid confusion with the outer variables:
 
-<p>\begin{split}
-V_\pi(s) & = \expectation{\pi}{\mathbf{r}_0 \big|\mathbf{s}_0 = s} + \gamma\,
-\sum_{t = 0}^{\infty} \gamma^t\, \sum_{a_0, s_1} \pi(a_0 | s)
-p(s_1 | s, a_0) \expectation{\pi}{\mathbf{r}_{t} \Big| \mathbf{s}_0 = s_1} \\
-& = \expectation{\pi}{\mathbf{r}_0 \big|\mathbf{s}_0 = s} + \gamma\,
-\sum_{a_0, s_1} \pi(a_0 | s)
-p(s_1 | s, a_0) \sum_{t = 0}^{\infty} \gamma^t\,
-\expectation{\pi}{\mathbf{r}_{t} \Big| \mathbf{s}_0 = s_1} \\
-& = \expectation{\pi}{\mathbf{r}_0 \big|\mathbf{s}_0 = s} + \gamma\,
-\sum_{a_0, s_1} \pi(a_0 | s)
-p(s_1 | s, a_0) V(s_1) \\
-& = \expectation{\pi}{\mathbf{r}_0 \big|\mathbf{s}_0 = s} + \gamma\,
-\expectation{\pi}{V(s_1) \big | \mathbf{s}_0 = s} \,.
-\end{split} </p>
+<p>\begin{equation}
+V_\pi(s) =
+\expectation{\pi}{\mathbf{r}_0 \big|\mathbf{s}_0 = s} +
+\gamma\,
+\expectation{\pi}{
+\expectation{\pi}{\sum_{t = 0}^{\infty} \gamma^t\,\hat{\mathbf{r}}_{t + 1}
+\Big| \hat{\mathbf{s}}_1 = \mathbf{s}_1}
+\Big|\mathbf{s}_0 = s}\,.
+\end{equation}</p>
+
+Now we use the fact that the conditional distributions do not depend on time to
+shift the time index in the inner expectation:
+
+<p>\begin{equation}
+V_\pi(s) = \expectation{\pi}{\mathbf{r}_0 \big|\mathbf{s}_0 = s} +
+\gamma\,
+\expectation{\pi}{
+\expectation{\pi}{\sum_{t = 0}^{\infty} \gamma^t\,\hat{\mathbf{r}}_{t}
+\Big| \hat{\mathbf{s}}_0 = \mathbf{s}_1}
+\Big|\mathbf{s}_0 = s}\,.
+\end{equation} </p>
+
+Now we recongize the inner expecation as the value of state $$\mathbf{s}_1$$:
+
+<p>\begin{equation}
+V_\pi(s) = \expectation{\pi}{\mathbf{r}_0 \big|\mathbf{s}_0 = s} +
+\gamma\,
+\expectation{\pi}{V_\pi(\mathbf{s}_1) \big|\mathbf{s}_0 = s}\,,
+\end{equation} </p>
+from which the Bellman equation follows.
+
 
 The Bellman equation is the fixed point equation of the recursion relation:
 <p>\begin{equation}
@@ -263,4 +261,100 @@ V_{\pi,\, k + 1}(s) = \expectation{\pi}{\mathbf{r}_0 +
 It is however necessary to show that the fixed point exists and is unique. This
 is done by proving that the conditions for the Banach fixed point theorem are
 met.
+
+The action-value function also satisfies a similar Bellman equation:
+<p>\begin{equation}
+Q_\pi(s, a) = \expectation{\pi}{\mathbf{r}_0 +
+\gamma Q_\pi(\mathbf{s}_1, \mathbf{a}_1)\big|\mathbf{s}_0
+= s, \mathbf{a}_0 = a}\,.
+\end{equation}</p>
+The proof is analogous to the one for the state-value function.
+
+
+### Policy iteration inequality {#section-proofs-policy-iteration-inequality}
+
+First we observe that:
+
+<p>\begin{equation}
+V_{\pi_0}(s) = \expectation{\pi_0}{
+Q_{\pi_0}(\mathbf{s}_0, \mathbf{a}_0) \big | \mathbf{s}_0 = s}
+\leq \mathrm{max}_a Q_{\pi_0}(s, a) = Q_{\pi_0}(s, \pi_1(s))\,.
+\end{equation}</p>
+
+Then we express the action-value on the right hand side in terms of the state
+value:
+
+<p>\begin{equation}
+V_{\pi_0}(s) \leq \expectation{}
+{\mathbf{r}_0 + \gamma V_{\pi_0}(\mathbf{s}_1)\big|\mathbf{s}_0 = s,\,
+\mathbf{a}_0 = \pi_1(s)}\,.
+\end{equation}</p>
+
+Then we observe that, because $$\pi_1$$ is deterministic, the conditioning on
+the action is the same as taking an expectation under $$\pi_1$$:
+
+<p>\begin{equation}
+V_{\pi_0}(s) \leq
+\expectation{\pi_1}
+{\mathbf{r}_0 + \gamma V_{\pi_0}(\mathbf{s}_1)\big|\mathbf{s}_0 = s}\,.
+\end{equation}</p>
+
+Now we apply this inequality again to the value inside the expectation:
+
+<p>\begin{equation}
+V_{\pi_0}(s) \leq
+\expectation{\pi_1}
+{\mathbf{r}_0 + \gamma \left(
+\expectation{\pi_1}
+{\hat{\mathbf{r}}_0 + \gamma V_{\pi_0}(\hat{\mathbf{s}}_1)\big
+|\hat{\mathbf{s}}_0 = \mathbf{s}_1}
+\right)
+\big|\mathbf{s}_0
+= s}\,,
+\end{equation}</p>
+
+where we have denoted with a hat the random variables of the inner expectation,
+to avoid confusing them with those of the outer expectation.
+
+Now we use the fact that conditional probabilities do not depend on time to
+shift the index in the inner expectation:
+<p>\begin{equation}
+V_{\pi_0}(s) \leq
+\expectation{\pi_1}
+{\mathbf{r}_0 + \gamma \left(
+\expectation{\pi_1}
+{\hat{\mathbf{r}}_1 + \gamma V_{\pi_0}(\hat{\mathbf{s}}_2)\big
+|\hat{\mathbf{s}}_1 = \mathbf{s}_1}
+\right)
+\big|\mathbf{s}_0
+= s}\,,
+\end{equation}</p>
+
+Now the variables of the inner expectation have the same joint distribution as
+those of the outer expectation, and the right hand side can be written as a
+single expectation:
+<p>\begin{equation}
+V_{\pi_0}(s) \leq
+\expectation{\pi_1}
+{\mathbf{r}_0 + \gamma \left(
+\mathbf{r}_1 + \gamma V_{\pi_0}(\mathbf{s}_2)
+\right)
+\big|\mathbf{s}_0
+= s}\,.
+\end{equation}</p>
+
+The procedure can be repeated, to yield:
+<p>\begin{equation}
+V_{\pi_0}(s) \leq
+\expectation{\pi_1}
+{\mathbf{r}_0 + \gamma \left(
+\mathbf{r}_1 + \gamma \left(\mathbf{r}_2 + \gamma \left(\ldots\right)\right)
+\right)
+\big|\mathbf{s}_0
+= s} = V_{\pi_1}(s)\,.
+\end{equation}</p>
+
+If the initial inequality is strict, this final inequality is also strict.
+
+
 
