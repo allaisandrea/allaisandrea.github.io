@@ -114,7 +114,8 @@ Q_{\pi_0}(s, \pi_1(s)) = \mathrm{max}_{a}\left[Q_{\pi_0}(s, a)\right]\,.
 \end{equation}</p>
 
 The policy $$\pi_1$$ constructed in this fashion constitutes an improvement over
-$$\pi_0$$ in that it has value not less than $$\pi_0$$ in every state:
+$$\pi_0$$ in that it has value not less than $$\pi_0$$ in every state
+([proof](#section-proofs-policy-iteration-inequality)):
 
 <p>\begin{equation}
 V_{\pi_1}(s) \geq V_{\pi_0}(s)\quad \forall\, s\,,
@@ -356,5 +357,28 @@ V_{\pi_0}(s) \leq
 
 If the initial inequality is strict, this final inequality is also strict.
 
+### Value iteration
 
+The terminal policy $$\pi_\star$$ satisfies
+<p>\begin{equation}
+V_{\pi_\star}(s) = \mathrm{max}_a Q_{\pi_\star}(s, a) \,\quad \forall\, s\,.
+\end{equation}</p>
 
+We rewrite the right hand side in terms of the state value:
+<p>\begin{equation}
+V_{\pi_\star}(s) = \mathrm{max}_a\, \expectation{}
+{\mathbf{r}_0 + \gamma\, V_{\pi_\star}(\mathbf{s}_1) \big|
+\mathbf{s}_0 = s,\, \mathbf{a}_0 = a}\,,
+\end{equation}</p>
+which is the fixed point of the value iteration recursion relation:
+<p>\begin{equation}
+V_{k + 1}(s) = \mathrm{max}_a\, \expectation{}
+{\mathbf{r}_0 + \gamma\,
+V_{k}(\mathbf{s}_1)\big|\mathbf{s}_0 = s, \mathbf{a}_0 = a}\,.
+\end{equation}</p>
+
+It is still necessary to show that the fixed point exists and is unique.
+
+The action-value recursion relation is proved in a similar way, rewriting the
+left hand side of the terminal policy identity in terms of the action-value
+function.
