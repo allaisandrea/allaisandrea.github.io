@@ -43,16 +43,18 @@ where:
 * The state of the world $$\mathbf{s}_{t + 1}$$ depends on the previous state
   $$\mathbf{s}_t$$ and on the previous agent action $$\mathbf{a}_t$$.
 
-* The reward $$\mathbf{r}_t$$ depends on the state $$\mathbf{s}_t$$ and the action $$\mathbf{a}_t$$. It may be stochastic, but most
-   commonly it is a deterministic function of the state alone.
+* In general, the reward $$\mathbf{r}_t$$ can be stochastic and depend on both
+  the state $$\mathbf{s}_t$$ and the action $$\mathbf{a}_t$$. Most commonly, it
+  is a deterministic function of the state alone.
 
 * The conditional distributions $$(\mathbf{a}_t | \mathbf{s}_t)$$,
   $$(\mathbf{r}_t | \mathbf{s}_t, \mathbf{a}_t)$$, and
   $$(\mathbf{s}_{t + 1} | \mathbf{s}_t, \mathbf{a}_t)$$
   do not depend on time.
 
-The distribution of the agent actions conditioned on the state is called the
-_policy_  and is usually denoted by the letter $$\pi$$.  The goal of
+The conditional distribution $$(\mathbf{a}_t | \mathbf{s}_t)$$ that determines
+the agent actions given the state is called the
+_policy_  and is usually denoted by the letter $$\pi$$. The goal of
 reinforcement learning is to obtain a policy that maximizes the expected total
 discounted reward:
 
@@ -100,7 +102,7 @@ few billion states.
 
 ### Policy iteration
 
-Given values for a policy $$\pi_0$$, an improved, deterministic policy $$\pi_1$$
+Given values for a policy $$\pi_0$$, an improved, _deterministic_ policy $$\pi_1$$
 can be constructed by choosing in each state $$s$$ the action $$a$$ that
 maximizes the action value of policy $$\pi_0$$:
 
@@ -168,7 +170,7 @@ where the expectation does not depend on the policy because of the conditioning.
 It is not necessary to carry out the policy iteration algorithm explicitly.
 Instead, the state value function of the terminal policy $$\pi_\star$$ can be
 obtained as the fixed point of the recursion relation
-([proof](#section-proofs-value-iteration-recursion-relation))
+([proof](#section-proofs-value-iteration-recursion-relation)):
 
 <p>\begin{equation}
 V_{k + 1}(s) = \mathrm{max}_a\, \expectation{}
@@ -192,6 +194,27 @@ Q_{k + 1}(s, a) = \expectation{}
 \end{equation}</p>
 
 where the expectation does not depend on the policy because of the conditioning.
+
+## Policy gradient methods
+
+Policy gradient methods assume that the policy is a differentiable function of a
+collection of parameters $$\theta$$, estimate the gradient of the expected
+reward with respect to these, and use stochastic gradient ascent to maximize
+its value.
+
+They are enabled by the following identity:
+
+<p>\begin{equation}
+\nabla \eta(\pi) =
+\expectation{\pi}{\sum_{t = 0}^{\infty}
+Q_\pi(\mathbf{s}_t, \mathbf{a}_t)
+\nabla \log \pi(\mathbf{a}_t | \mathbf{s}_t)
+}\,.
+\end{equation}</p>
+
+<figure>
+<img src="trpo_diagram.svg" alt="TRPO diagram" style="max-width:5in;border:none"/>
+</figure>
 
 ## Proofs
 
@@ -318,7 +341,7 @@ where we have marked with a hat the random variables of the inner expectation,
 to avoid confusing them with those of the outer expectation.
 
 Now we use the fact that conditional probabilities do not depend on time to
-shift the index in the inner expectation:
+shift the time index in the inner expectation:
 <p>\begin{equation}
 V_{\pi_0}(s) \leq
 \expectation{\pi_1}

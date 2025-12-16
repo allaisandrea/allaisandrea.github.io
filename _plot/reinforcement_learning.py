@@ -43,6 +43,52 @@ def plot_graphical_model(output_path: str):
         lib.plot_edge(axes, node1, node2)
     figure.savefig(os.path.join(output_path, "graphical_model.svg"))
 
+def plot_trpo_diagram(output_path: str):
+    theta = np.linspace(-0.8, 0.3, 128)
+    c0 = 0.0; c1 = 0.0; c2 = -1.0;
+    theta_0 = -0.35
+    def f0(theta):
+        return c0 + c1 * theta + c2 * theta ** 2
+    def df0(theta):
+        return c1 + 2 * c2 * theta
+    def f1(theta):
+        return f0(theta_0) + df0(theta_0) * (theta - theta_0)
+    def f2(theta):
+        d_theta = theta - theta_0
+        return f0(theta_0) + df0(theta_0) * d_theta - 2.0 * d_theta ** 2
+    theta_max_0 = -c1 / (2 * c2)
+    theta_max_1 = theta_0 + df0(theta_0) / 4
+    figure, axes = plt.subplots(
+        1, 1, figsize=(5, 3), dpi=300,
+        gridspec_kw=dict(top=0.99, bottom=0.15, left=0.01, right=0.99)
+    )
+    axes.plot(theta, f0(theta), color='black')
+    axes.plot(theta, f1(theta), color='black')
+    axes.plot(theta, f2(theta), color='black')
+    axes.plot(
+        [theta_0, theta_max_0, theta_max_1], [f0(theta_0), f0(theta_max_0), f2(theta_max_1)],
+        color='black', marker='o', linestyle='none', ms=4)
+    axes.axvline(theta_0, color='black', ymax=0.8, linewidth=1)
+    axes.annotate(
+        r"$\eta(\theta)$", (0.2, f0(0.2)), (0, 5),
+        textcoords="offset points", ha="right", va="bottom")
+    axes.annotate(
+        r"$\eta(\theta_0) + (\theta - \theta_0) \cdot \nabla \eta(\theta_0)$",
+        (0.1, f1(0.1)), (-50, 5),
+        textcoords="offset points", ha="right", va="bottom",
+        arrowprops=dict(arrowstyle='->', color='black', shrinkB=10)
+        )
+    axes.annotate(
+        r"$L_{\mathrm{TRPO}}(\theta, \theta_0)$", (0.2, f2(0.2)), (0, -5),
+        textcoords="offset points", ha="right", va="top")
+    axes.set_xticks([theta_0])
+    axes.set_xticklabels([r"$\theta_0$"])
+    axes.set_yticks([])
+    axes.set_xlabel(r"$\theta$")
+    axes.xaxis.set_label_coords(0.9, -0.05)
+    figure.savefig(os.path.join(output_path, 'trpo_diagram.svg'))
+
+
 
 if __name__ == "__main__":
     task = sys.argv[1]
@@ -50,5 +96,7 @@ if __name__ == "__main__":
     match task:
         case "graphical_model":
             plot_graphical_model(output_path)
+        case 'trpo_diagram':
+            plot_trpo_diagram(output_path)
         case _:
             raise ValueError(f"Unknown task: {task}")
