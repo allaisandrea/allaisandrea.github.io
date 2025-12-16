@@ -51,22 +51,18 @@ where:
   $$(\mathbf{s}_{t + 1} | \mathbf{s}_t, \mathbf{a}_t)$$
   do not depend on time.
 
-The conditional distribution of the agent actions is called _policy_, and we
-denote its PDF/PMF by:
-
-<p>\begin{equation}
-\pi(a | s) = \mathrm{Prob}\left[\mathbf{a}_t = a | \mathbf{s}_t = s \right]\,.
-\end{equation}</p>
-
-The goal of reinforcement learning is to obtain a policy that maximizes the
-expected total discounted reward:
+The distribution of the agent actions conditioned on the state is called the
+_policy_  and is usually denoted by the letter $$\pi$$.  The goal of
+reinforcement learning is to obtain a policy that maximizes the expected total
+discounted reward:
 
 <p>\begin{equation}
 \eta(\pi) = \expectation{\pi}{\sum_{t = 0}^{\infty} \gamma^t \mathbf{r}_t}\,,
 \end{equation}</p>
 
 where $$\gamma \in [0, 1)$$ is a discount factor that reduces the present value
-of future rewards.
+of future rewards and the subscript $$\pi$$ indicates that the expectation
+depends on the policy.
 
 ## Dynamic programming algorithms
 
@@ -122,7 +118,9 @@ V_{\pi_1}(s) \geq V_{\pi_0}(s)\quad \forall\, s\,,
 \end{equation}</p>
 
 and consequently the expected total reward $$\eta(\pi_1)$$ is also not less than
-$$\eta(\pi_0)$$. Moreover, the inequality is strict for state $$s$$ if:
+$$\eta(\pi_0)$$.
+
+Moreover, the inequality is strict for state $$s$$ if:
 
 <p>\begin{equation}
 \mathrm{max}_a Q_{\pi_0}(s, a) > V_{\pi_0}(s)\,.
@@ -143,7 +141,7 @@ simultaneously maximizes the value at every state:
 V_{\pi_\star}(s) = \mathrm{max}_{\pi} V_{\pi}(s)\,,
 \end{equation}</p>
 
-however, I have not found a convincing proof yet.
+however, I have not seen a convincing proof yet.
 
 ### Policy evaluation {#section-policy-evaluation}
 
@@ -156,8 +154,7 @@ V_{\pi,\, k + 1}(s) = \expectation{\pi}{\mathbf{r}_0 +
 \gamma V_{\pi,\, k}(\mathbf{s}_1)|\mathbf{s}_0 = s}\,,
 \end{equation}</p>
 
-which can be shown to exist and be unique.  Then the action values can be
-computed as:
+Then the action values can be computed as:
 
 <p>\begin{equation}
 Q_\pi(s, a) =  \expectation{}
@@ -170,7 +167,8 @@ where the expectation does not depend on the policy because of the conditioning.
 
 It is not necessary to carry out the policy iteration algorithm explicitly.
 Instead, the state value function of the terminal policy $$\pi_\star$$ can be
-obtained as the fixed point of the recursion relation:
+obtained as the fixed point of the recursion relation
+([proof](#section-proofs-value-iteration-recursion-relation))
 
 <p>\begin{equation}
 V_{k + 1}(s) = \mathrm{max}_a\, \expectation{}
@@ -179,10 +177,9 @@ V_{k}(\mathbf{s}_1)\big|\mathbf{s}_0 = s,\, \mathbf{a}_0 = a}\,,
 \end{equation}</p>
 
 where the expectation does not depend on the policy because of the conditioning.
-The fixed point can be shown to exist and be unique. The action-value function
-can be obtained from the state value as before, and the terminal policy
-$$\pi_\star$$ is the one that choses the action with maximum value at each
-state.
+The action-value function can be obtained from the state value as before, and
+the terminal policy $$\pi_\star$$ is the one that choses the action with maximum
+value at each state.
 
 Alternatively, at the cost of tabulating one value for each state-action pair,
 instead of just for each state, the action-value function of the terminal policy
@@ -217,8 +214,9 @@ V_\pi(s) & =
 \end{split}</p>
 
 Now we split the expectation as an outer expectation over variables
-$$\mathbf{a}_0$$ and $$\mathbf{s}_1$$, and an inner expectation over variables
-$$\hat{\mathbf{a}}_1,\,\hat{\mathbf{s}}_2,\,\ldots$$, which we denote with a hat
+$$\mathbf{s}_0$$, $$\mathbf{a}_0$$ and $$\mathbf{s}_1$$, and an inner
+expectation over variables $$\hat{\mathbf{s}}_1$$,
+$$\hat{\mathbf{a}}_1,\,\hat{\mathbf{s}}_2,\,\ldots$$, which we mark with a hat
 to avoid confusion with the outer variables:
 
 <p>\begin{equation}
@@ -253,13 +251,15 @@ V_\pi(s) = \expectation{\pi}{\mathbf{r}_0 \big|\mathbf{s}_0 = s} +
 from which the Bellman equation follows.
 
 
-The Bellman equation is the fixed point equation of the recursion relation:
+The Bellman equation is the fixed point equation of the policy evaluation
+recursion relation:
+
 <p>\begin{equation}
 V_{\pi,\, k + 1}(s) = \expectation{\pi}{\mathbf{r}_0 +
 \gamma V_{\pi,\, k}(\mathbf{s}_1)|\mathbf{s}_0 = s}\,.
 \end{equation}</p>
 
-It is however necessary to show that the fixed point exists and is unique. This
+It is still necessary to show that the fixed point exists and is unique. This
 is done by proving that the conditions for the Banach fixed point theorem are
 met.
 
@@ -291,7 +291,7 @@ V_{\pi_0}(s) \leq \expectation{}
 \mathbf{a}_0 = \pi_1(s)}\,.
 \end{equation}</p>
 
-Then we observe that, because $$\pi_1$$ is deterministic, the conditioning on
+Then we observe that, because $$\pi_1$$ is deterministic, conditioning on
 the action is the same as taking an expectation under $$\pi_1$$:
 
 <p>\begin{equation}
@@ -314,7 +314,7 @@ V_{\pi_0}(s) \leq
 = s}\,,
 \end{equation}</p>
 
-where we have denoted with a hat the random variables of the inner expectation,
+where we have marked with a hat the random variables of the inner expectation,
 to avoid confusing them with those of the outer expectation.
 
 Now we use the fact that conditional probabilities do not depend on time to
@@ -357,7 +357,7 @@ V_{\pi_0}(s) \leq
 
 If the initial inequality is strict, this final inequality is also strict.
 
-### Value iteration
+### Value iteration recursion relation {#section-proofs-value-iteration-recursion-relation}
 
 The terminal policy $$\pi_\star$$ satisfies
 <p>\begin{equation}
@@ -370,7 +370,7 @@ V_{\pi_\star}(s) = \mathrm{max}_a\, \expectation{}
 {\mathbf{r}_0 + \gamma\, V_{\pi_\star}(\mathbf{s}_1) \big|
 \mathbf{s}_0 = s,\, \mathbf{a}_0 = a}\,,
 \end{equation}</p>
-which is the fixed point of the value iteration recursion relation:
+which is the fixed point equation of the value iteration recursion relation:
 <p>\begin{equation}
 V_{k + 1}(s) = \mathrm{max}_a\, \expectation{}
 {\mathbf{r}_0 + \gamma\,
@@ -379,6 +379,4 @@ V_{k}(\mathbf{s}_1)\big|\mathbf{s}_0 = s, \mathbf{a}_0 = a}\,.
 
 It is still necessary to show that the fixed point exists and is unique.
 
-The action-value recursion relation is proved in a similar way, rewriting the
-left hand side of the terminal policy identity in terms of the action-value
-function.
+The action-value recursion relation is proved in a similar way.
