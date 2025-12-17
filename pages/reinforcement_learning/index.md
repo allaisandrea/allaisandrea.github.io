@@ -52,11 +52,15 @@ where:
   $$(\mathbf{s}_{t + 1} | \mathbf{s}_t, \mathbf{a}_t)$$
   do not depend on time.
 
-The conditional distribution $$(\mathbf{a}_t | \mathbf{s}_t)$$ that determines
-the agent actions given the state is called the
-_policy_  and is usually denoted by the letter $$\pi$$. The goal of
-reinforcement learning is to obtain a policy that maximizes the expected total
-discounted reward:
+The conditional distribution of the agent actions given the state is called the
+_policy_  and we denoted its PMF/PDF by:
+
+<p>\begin{equation}
+\pi(a | s) = \mathrm{Prob}\left[\mathbf{a}_t = a | \mathbf{s}_t = s\right]\,.
+\end{equation}</p>
+
+The goal of reinforcement learning is to obtain a policy that maximizes the
+expected total discounted reward:
 
 <p>\begin{equation}
 \eta(\pi) = \expectation{\pi}{\sum_{t = 0}^{\infty} \gamma^t \mathbf{r}_t}\,,
@@ -207,9 +211,45 @@ They are enabled by the following identity:
 <p>\begin{equation}
 \nabla \eta(\pi) =
 \expectation{\pi}{\sum_{t = 0}^{\infty}
-Q_\pi(\mathbf{s}_t, \mathbf{a}_t)
+A_\pi(\mathbf{s}_t, \mathbf{a}_t)
 \nabla \log \pi(\mathbf{a}_t | \mathbf{s}_t)
-}\,.
+}\,,
+\end{equation}</p>
+
+where $$A_\pi$$ is the _advantage function_:
+<p>\begin{equation}
+A_\pi(s, a) = Q_\pi(s, a) - V_\pi(s)\,.
+\end{equation}</p>
+
+The term $$\nabla \log \pi$$ can be evaluated relatively cheaply using automatic
+differentiation, but the advantage $$A$$ and the expectation also depend on the
+policy, and they are very expensive to evaluate in practice, requiring a large
+number of samples from the Markov decision process.  Therefore, it is tempting
+to update them less frequently during optimization. That is, to keep a fixed
+reference policy $$\pi_0$$ and run multiple optimization iterations on a loss
+like:
+
+<p>\begin{equation}
+L_{\mathrm{naive}}(\pi, \pi_0) =
+\expectation{\pi_0}{\sum_{t = 0}^{\infty}
+A_{\pi_0}(\mathbf{s}_t, \mathbf{a}_t) \log \pi(\mathbf{a}_t | \mathbf{s}_t)
+}\,,
+\end{equation}</p>
+
+or
+
+<p>\begin{equation}
+L_{\mathrm{naive}}(\pi, \pi_0) =
+\expectation{\pi_0}{\sum_{t = 0}^{\infty}
+A_{\pi_0}(\mathbf{s}_t, \mathbf{a}_t) \frac{\pi(\mathbf{a}_t | \mathbf{s}_t)}
+{\pi_0{(\mathbf{a}_t | \mathbf{s}_t)}}
+}\,,
+\end{equation}</p>
+
+both of which have the same gradient as $$\eta$$ at $$\pi_0$$:
+
+<p>\begin{equation}
+\nabla_{\pi} L_{\mathrm{naive}}(\pi, \pi_0) |_{\pi = \pi_0} = \nabla \eta(\pi_0)
 \end{equation}</p>
 
 <figure>
