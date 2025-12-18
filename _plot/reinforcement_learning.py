@@ -120,7 +120,7 @@ def plot_trpo_diagram(output_path: str):
         va="bottom",
     )
     axes.annotate(
-        r"$L_{\mathrm{naive}}(\theta, \theta_0)$",
+        r"$J_{\mathrm{naive}}(\theta, \theta_0)$",
         (0.22, f1(0.22)),
         (0, -5),
         textcoords="offset points",
@@ -128,7 +128,7 @@ def plot_trpo_diagram(output_path: str):
         va="top",
     )
     axes.annotate(
-        r"$L_{\mathrm{TRPO}}(\theta, \theta_0)$",
+        r"$J_{\mathrm{TRPO}}(\theta, \theta_0)$",
         (0.22, f2(0.22)),
         (5, 0),
         textcoords="offset points",

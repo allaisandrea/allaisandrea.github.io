@@ -1,6 +1,15 @@
 ---
 layout: default
 title: Reinforcement learning
+references:
+  - tag: ref_1
+    authors: Schulman <i> et. al. </i>
+    title: Trust Region Policy Optimization
+    year: 2015
+  - tag: ref_2
+    authors: Schulman <i> et. al. </i>
+    title: Proximal Policy Optimization Algorithms
+    year: 2017
 ---
 
 # Reinforcement learning
@@ -226,35 +235,93 @@ differentiation, but the advantage $$A$$ and the expectation also depend on the
 policy, and they are very expensive to evaluate in practice, requiring a large
 number of samples from the Markov decision process.  Therefore, it is tempting
 to update them less frequently during optimization. That is, to keep a fixed
-reference policy $$\pi_0$$ and run multiple optimization iterations on a loss
-like:
+reference policy $$\pi_0$$ and run multiple optimization iterations on an
+objective like:
 
 <p>\begin{equation}
-L_{\mathrm{naive}}(\pi, \pi_0) =
-\expectation{\pi_0}{\sum_{t = 0}^{\infty}
-A_{\pi_0}(\mathbf{s}_t, \mathbf{a}_t) \log \pi(\mathbf{a}_t | \mathbf{s}_t)
-}\,,
-\end{equation}</p>
-
-or
-
-<p>\begin{equation}
-L_{\mathrm{naive}}(\pi, \pi_0) =
+J_{\mathrm{naive}}(\pi, \pi_0) = \eta(\pi_0) +
 \expectation{\pi_0}{\sum_{t = 0}^{\infty}
 A_{\pi_0}(\mathbf{s}_t, \mathbf{a}_t) \frac{\pi(\mathbf{a}_t | \mathbf{s}_t)}
 {\pi_0{(\mathbf{a}_t | \mathbf{s}_t)}}
 }\,,
 \end{equation}</p>
 
-both of which have the same gradient as $$\eta$$ at $$\pi_0$$:
+which has the same gradient as $$\eta$$ at $$\pi = \pi_0$$:
 
 <p>\begin{equation}
-\nabla_{\pi} L_{\mathrm{naive}}(\pi, \pi_0) |_{\pi = \pi_0} = \nabla \eta(\pi_0)
+\nabla J_{\mathrm{naive}}(\pi, \pi_0) |_{\pi = \pi_0} = \nabla \eta(\pi_0)\,.
 \end{equation}</p>
+
+However, $$J_{\mathrm{naive}}$$ is different from $$\eta$$ at $$\pi \neq \pi_0$$
+and fully optimizing it can lead to a worse policy than $$\pi_0$$, as shown in
+the figure below. In order to get a guranteed improvement, it's necessary to
+optimize it while moderating the difference between $$\pi$$ and $$\pi_0$$.
+
 
 <figure>
 <img src="trpo_diagram.svg" alt="TRPO diagram" style="max-width:5in;border:none"/>
 </figure>
+
+In [[1]][ref_1] the following objective was introduced:
+
+<p>\begin{equation}
+J_{\mathrm{TRPO}}(\pi, \pi_0) = J_{\mathrm{naive}}(\pi, \pi_0) +
+C(\pi_0)\, \mathrm{max}_s\, \mathrm{D}\big(\pi_0(\cdot, s) || \pi(\cdot, s)\big)\,,
+\end{equation}</p>
+
+where $$\mathrm D$$ is the Kullback-Leibler divergence, and $$C$$ is a
+coefficient that does not depend on $$\pi$$ (see the paper for an explicit
+expression). The addition of the KL divergence moderates the distance between
+the reference policy $$\pi_0$$ and the optimum of the objective.
+
+More precisely, this objective has the same gradient as $$\eta$$ at $$\pi =
+\pi_0$$, and it is also is a lower bound on $$\eta$$ everywhere:
+
+<p>\begin{equation}
+\eta(\pi) \geq J_{\mathrm{TRPO}}(\pi, \pi_0)\quad \forall\, \pi\,.
+\end{equation}</p>
+
+See the paper for the proof, and the figure above for an illustration.
+
+Consequently, an improvement in $$J_{\mathrm{TRPO}}$$ is guaranteed to translate
+into an improvement in the true objective $$\eta$$.
+
+Unfortunately this objective is not very practical, both because the coefficient
+$$C(\pi_0)$$ is quite large, and therefore only allows small changes in policy,
+and because the computation of the maximum KL divergence over all states is
+challenging.
+
+In [[1]][ref_1] they work around these two issues heuristically, by replacing
+the KL divergence term with a constraint on the average KL divergence.
+That is, they maximize $$J_\mathrm{naive}$$ subject to the constraint:
+
+<p>\begin{equation}
+\expectation{\pi_0}{
+\sum_{t = 0}^\infty\gamma^t\,
+\mathrm{D}\big(\pi_0(\cdot, \mathbf{s}_t) || \pi(\cdot, \mathbf{s}_t)\big)
+} \leq \delta\,,
+\end{equation}</p>
+
+where $$\delta$$ is a hyperparameter.
+
+In [[2]][ref_2], the following objective was introduced:
+<p>\begin{equation}
+J_{\mathrm{PPO}}(\pi, \pi_0) =
+\expectation{\pi_0}{\sum_{t = 0}^{\infty}
+\begin{cases}
+A_{\pi_0}(\mathbf{s}_t, \mathbf{a}_t)\,
+\min{\frac{\pi(\mathbf{a}_t | \mathbf{s}_t)}
+{\pi_0{(\mathbf{a}_t | \mathbf{s}_t)}}}{1 + \epsilon}
+&\text{if $A \geq 0$}
+\\
+A_{\pi_0}(\mathbf{s}_t, \mathbf{a}_t)\,
+\max{\frac{\pi(\mathbf{a}_t | \mathbf{s}_t)}
+{\pi_0{(\mathbf{a}_t | \mathbf{s}_t)}}}{1 - \epsilon}
+&\text{if $A < 0$}
+\end{cases}
+}
+\end{equation}</p>
+
 
 ## Proofs
 
@@ -443,3 +510,5 @@ V_{k}(\mathbf{s}_1)\big|\mathbf{s}_0 = s, \mathbf{a}_0 = a}\,.
 It is still necessary to show that the fixed point exists and is unique.
 
 The action-value recursion relation is proved in a similar way.
+
+{% include references.md %}
