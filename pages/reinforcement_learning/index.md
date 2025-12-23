@@ -319,8 +319,14 @@ A_{\pi_0}(\mathbf{s}_t, \mathbf{a}_t)\,
 {\pi_0{(\mathbf{a}_t | \mathbf{s}_t)}}}{1 - \epsilon}
 &\text{if $A < 0$}
 \end{cases}
-}
+}\,,
 \end{equation}</p>
+
+which limits the incentive to make large policy changes. In state-action pairs
+with positive advantage, increasing the action likelihood $$\pi(a|s)$$ increases
+the objective, but only up to $$(1 + \epsilon) \pi_0(a|s)$$. Beyond this
+threshold, changing the policy has no effect. The upside of lowering the action
+likelihood where the advantage is negative is similarly bounded.
 
 
 ## Proofs
@@ -396,7 +402,7 @@ met.
 The action-value function also satisfies a similar Bellman equation:
 <p>\begin{equation}
 Q_\pi(s, a) = \expectation{\pi}{\mathbf{r}_0 +
-\gamma Q_\pi(\mathbf{s}_1, \mathbf{a}_1)\big|\mathbf{s}_0
+\gamma\, Q_\pi(\mathbf{s}_1, \mathbf{a}_1)\big|\mathbf{s}_0
 = s, \mathbf{a}_0 = a}\,.
 \end{equation}</p>
 The proof is analogous to the one for the state-value function.
@@ -511,4 +517,68 @@ It is still necessary to show that the fixed point exists and is unique.
 
 The action-value recursion relation is proved in a similar way.
 
+### Policy gradient identity {#section-proofs-policy-gradient-identity}
+
+We want to prove the following identity:
+
+<p>\begin{equation}
+\nabla \eta(\pi) =
+\expectation{\pi}{\sum_{t = 0}^{\infty}
+A_\pi(\mathbf{s}_t, \mathbf{a}_t)
+\nabla \log \pi(\mathbf{a}_t | \mathbf{s}_t)
+}\,.
+\end{equation}</p>
+
+First we prove that:
+
+<p>\begin{equation}
+\begin{aligned}
+&\nabla \expectation{\pi}{f_\pi(\mathbf{s}_0, \mathbf{a}_0) | \mathbf{s}_0 = s} = \\
+& \quad \quad \expectation{\pi}{\nabla f_\pi(\mathbf{s}_0, \mathbf{a}_0) +
+f_\pi(\mathbf{s}_0, \mathbf{a}_0)
+\nabla \log \pi(\mathbf{a}_0|\mathbf{s}_0) | \mathbf{s}_0 = s}\,.
+\end{aligned}
+\end{equation}</p>
+
+We have:
+
+<p>\begin{split}
+\nabla \expectation{\pi}{f_\pi | \mathbf{s}_0 = s}
+& = \nabla \left[\sum_{a} \pi(a | s) f_\pi(s, a)\right] \\
+& = \sum_{a} \left[\pi(a | s) \nabla f_\pi(s, a) + f_\pi(s, a) \nabla \pi(a | s)\right]\\
+& = \sum_{a} \pi(a | s) \left[\nabla f_\pi(s, a) + f_\pi(s, a) \frac{\nabla \pi(a | s)}{\pi(a | s)}\right]\\
+& = \sum_{a} \pi(a | s) \left[\nabla f_\pi(s, a) + f_\pi(s, a)\nabla \log \pi(a | s)\right]\,.
+\end{split}</p>
+
+The unconditional expectation follows a similar identity, since the expectation
+over $$\mathbf{s}_0$$ does not involve the policy:
+
+<p>\begin{equation}
+\nabla \expectation{\pi}{f_\pi(\mathbf{s}_0, \mathbf{a}_0)} =
+\expectation{\pi}{\nabla f_\pi(\mathbf{s}_0, \mathbf{a}_0) +
+f_\pi(\mathbf{s}_0, \mathbf{a}_0) \nabla \log \pi(\mathbf{a}_0|\mathbf{s}_0)}\,.
+\end{equation}</p>
+
+In particular, from:
+<p>\begin{equation}
+\eta(\pi) = \expectation{\pi}{Q_\pi(\mathbf{s}_0, \mathbf{a}_0)}\,,
+\end{equation}</p>
+
+we have:
+
+<p>\begin{equation}
+\nabla \eta(\pi) = \expectation{\pi}{
+  Q_\pi(\mathbf{s}_0, \mathbf{a}_0) \nabla \log \pi(\mathbf{a}_0 | \mathbf{s}_0)
+  +\nabla Q_\pi(\mathbf{s}_0, \mathbf{a}_0) }\,.
+\end{equation}</p>
+
+Now we use the Bellman equation for the action value function:
+
+<p>\begin{equation}
+Q_\pi(s, a) = \expectation{\pi}{\mathbf{r}_0 +
+\gamma\, Q_\pi(\mathbf{s}_1, \mathbf{a}_1)\big|\mathbf{s}_0
+= s, \mathbf{a}_0 = a}
+\end{equation}</p>
+
+to express the term $$\nabla Q_\pi$$ recursively in terms of itself.
 {% include references.md %}
