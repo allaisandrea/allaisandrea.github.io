@@ -10,6 +10,10 @@ references:
     authors: Schulman <i> et. al. </i>
     title: Proximal Policy Optimization Algorithms
     year: 2017
+    notes: >
+      The gradient expressions in the paper do not display the \(\gamma^t\)
+      coefficient. It is unclear whether it is understood as part of the
+      expectation \(\mathrm{E}_t\) or wether they deem it unimportant.
 ---
 
 # Reinforcement learning
@@ -219,7 +223,7 @@ They are enabled by the following identity:
 
 <p>\begin{equation}
 \nabla \eta(\pi) =
-\expectation{\pi}{\sum_{t = 0}^{\infty}
+\expectation{\pi}{\sum_{t = 0}^{\infty} \gamma^t
 A_\pi(\mathbf{s}_t, \mathbf{a}_t)
 \nabla \log \pi(\mathbf{a}_t | \mathbf{s}_t)
 }\,,
@@ -240,7 +244,7 @@ objective like:
 
 <p>\begin{equation}
 J_{\mathrm{naive}}(\pi, \pi_0) = \eta(\pi_0) +
-\expectation{\pi_0}{\sum_{t = 0}^{\infty}
+\expectation{\pi_0}{\sum_{t = 0}^{\infty} \gamma^t
 A_{\pi_0}(\mathbf{s}_t, \mathbf{a}_t) \frac{\pi(\mathbf{a}_t | \mathbf{s}_t)}
 {\pi_0{(\mathbf{a}_t | \mathbf{s}_t)}}
 }\,,
@@ -307,7 +311,7 @@ where $$\delta$$ is a hyperparameter.
 In [[2]][ref_2], the following objective was introduced:
 <p>\begin{equation}
 J_{\mathrm{PPO}}(\pi, \pi_0) =
-\expectation{\pi_0}{\sum_{t = 0}^{\infty}
+\expectation{\pi_0}{\sum_{t = 0}^{\infty} \gamma^t
 \begin{cases}
 A_{\pi_0}(\mathbf{s}_t, \mathbf{a}_t)\,
 \min{\frac{\pi(\mathbf{a}_t | \mathbf{s}_t)}
@@ -470,6 +474,7 @@ V_{\pi_0}(s) \leq
 Now the variables of the inner expectation have the same joint distribution as
 those of the outer expectation, and the right hand side can be written as a
 single expectation:
+
 <p>\begin{equation}
 V_{\pi_0}(s) \leq
 \expectation{\pi_1}
@@ -523,43 +528,149 @@ We want to prove the following identity:
 
 <p>\begin{equation}
 \nabla \eta(\pi) =
-\expectation{\pi}{\sum_{t = 0}^{\infty}
+\expectation{\pi}{\sum_{t = 0}^{\infty} \gamma^t
 A_\pi(\mathbf{s}_t, \mathbf{a}_t)
 \nabla \log \pi(\mathbf{a}_t | \mathbf{s}_t)
 }\,.
 \end{equation}</p>
 
-First we prove that:
-
+We start by showing a similar identity involving the action-value function:
 <p>\begin{equation}
-\begin{aligned}
-&\nabla \expectation{\pi}{f_\pi(\mathbf{s}_0, \mathbf{a}_0) | \mathbf{s}_0 = s} = \\
-& \quad \quad \expectation{\pi}{\nabla f_\pi(\mathbf{s}_0, \mathbf{a}_0) +
-f_\pi(\mathbf{s}_0, \mathbf{a}_0)
-\nabla \log \pi(\mathbf{a}_0|\mathbf{s}_0) | \mathbf{s}_0 = s}\,.
-\end{aligned}
+\nabla Q_\pi(s, a) = \expectation{\pi}{
+    \sum_{t = 1}^{\infty}\gamma^t\,
+    Q_\pi(\mathbf{s}_t, \mathbf{a}_t)
+    \nabla\log \pi(\mathbf{a}_t| \mathbf{s}_t)\,
+    \Big|\,\mathbf{s}_0 = s, \mathbf{a}_0 = a
+}
 \end{equation}</p>
 
-We have:
+This is obtained by differentiating the Bellman equation for the action value
+function:
+
+<p>\begin{equation}
+Q_\pi(s, a) = \expectation{\pi}{\mathbf{r}_0 +
+\gamma\, Q_\pi(\mathbf{s}_1, \mathbf{a}_1)
+\big|\mathbf{s}_0 = s, \mathbf{a}_0 = a
+}
+\end{equation}</p>
+
+and expressing the term $$\nabla Q_\pi$$ recursively in terms of itself.
+
+For shortness, in the following we omit the conditioning $$\mathbf{s}_0 = s$$,
+$$\mathbf{a}_0 = a$$ when obvious, but it should be understood. We have:
+
+<p>\begin{equation}
+\nabla Q_\pi(s, a)
+= \nabla \expectation{\pi}{\mathbf{r}_0 + \gamma\,
+  Q_\pi(\mathbf{s}_1, \mathbf{a}_1)}
+= \gamma\, \nabla \expectation{\pi}{
+  Q_\pi(\mathbf{s}_1, \mathbf{a}_1)}\,,
+\end{equation}</p>
+
+where we used the fact that the expectation over $$\mathbf{r}_0$$ does not
+depend on the policy.
+
+Now we make explicit the dependency of the expectation on the policy likelihood:
 
 <p>\begin{split}
-\nabla \expectation{\pi}{f_\pi | \mathbf{s}_0 = s}
-& = \nabla \left[\sum_{a} \pi(a | s) f_\pi(s, a)\right] \\
-& = \sum_{a} \left[\pi(a | s) \nabla f_\pi(s, a) + f_\pi(s, a) \nabla \pi(a | s)\right]\\
-& = \sum_{a} \pi(a | s) \left[\nabla f_\pi(s, a) + f_\pi(s, a) \frac{\nabla \pi(a | s)}{\pi(a | s)}\right]\\
-& = \sum_{a} \pi(a | s) \left[\nabla f_\pi(s, a) + f_\pi(s, a)\nabla \log \pi(a | s)\right]\,.
+\nabla Q_\pi(s, a)
+& = \gamma\, \nabla \sum_{a_1} \expectation{}{
+  \pi(a_1| \mathbf{s}_1)
+  Q_\pi(\mathbf{s}_1, a_1)}\\
+& = \gamma\, \sum_{a_1} \expectation{}{
+  Q_\pi(\mathbf{s}_1, a_1) \nabla\pi(a_1| \mathbf{s}_1) +
+  \pi(a_1| \mathbf{s}_1) \nabla Q_\pi(\mathbf{s}_1, a_1)}\\
+& = \gamma\, \sum_{a_1} \expectation{}{
+  \pi(a_1| \mathbf{s}_1)\left (
+    Q_\pi(\mathbf{s}_1, a_1)
+    \frac{\nabla\pi(a_1| \mathbf{s}_1)}{\pi(a_1 \ \mathbf{s}_1)} +
+    \nabla Q_\pi(\mathbf{s}_1, a_1)
+  \right) }\\
+& = \gamma\, \expectation{\pi}{
+    Q_\pi(\mathbf{s}_1, \mathbf{a}_1)
+    \frac{\nabla\pi(\mathbf{a}_1| \mathbf{s}_1)}{\pi(\mathbf{a}_1 \ \mathbf{s}_1)} +
+    \nabla Q_\pi(\mathbf{s}_1, \mathbf{a}_1)
+  }\\
+& = \gamma\, \expectation{\pi}{
+    Q_\pi(\mathbf{s}_1, \mathbf{a}_1)
+    \nabla\log \pi(\mathbf{a}_1| \mathbf{s}_1) +
+    \nabla Q_\pi(\mathbf{s}_1, \mathbf{a}_1)
+    \big|\mathbf{s}_0 = s, \mathbf{a}_0 = a
+  }\,,
 \end{split}</p>
 
-The unconditional expectation follows a similar identity, since the expectation
-over $$\mathbf{s}_0$$ does not involve the policy:
+Now we apply this identity again to the term $$\nabla Q$$ on the right hand
+side. We mark with a hat the random variables of the inner expectation, to
+distinguish them from those of the outer expectation:
 
+<p>\begin{split}
+&\expectation{\pi}{\nabla Q(\mathbf{s}_1, \mathbf{a}_1) \big|\mathbf{s}_0 = s, \mathbf{a}_0 = a} =
+\mathrm{E}_{\pi} \big[
+\gamma\, \mathrm{E}_\pi \big[
+    Q_\pi(\hat{\mathbf{s}}_1, \hat{\mathbf{a}}_1)
+    \nabla\log \pi(\hat{\mathbf{a}}_1| \hat{\mathbf{s}}_1) + \\
+    &\quad\nabla Q_\pi(\hat{\mathbf{s}}_1, \hat{\mathbf{a}}_1)
+  \big|\hat{\mathbf{s}}_0 = \mathbf{s}_1, \hat{\mathbf{a}}_0 = \mathbf{a}_1
+  \big] \big|\mathbf{s}_0 = s, \mathbf{a}_0 = a \big]\,,
+\end{split}</p>
+
+Now we use the fact that the conditional distributions do not depend on time to
+shift the time index in the inner expectation:
+
+<p>\begin{split}
+&\expectation{\pi}{\nabla Q(\mathbf{s}_1, \mathbf{a}_1) \big|\mathbf{s}_0 = s, \mathbf{a}_0 = a} =
+\mathrm{E}_{\pi} \big[
+\gamma\, \mathrm{E}_\pi \big[
+    Q_\pi(\hat{\mathbf{s}}_2, \hat{\mathbf{a}}_2)
+    \nabla\log \pi(\hat{\mathbf{a}}_2| \hat{\mathbf{s}}_2) + \\
+    &\quad\nabla Q_\pi(\hat{\mathbf{s}}_2, \hat{\mathbf{a}}_2)
+  \big|\hat{\mathbf{s}}_1 = \mathbf{s}_1, \hat{\mathbf{a}}_1 = \mathbf{a}_1
+  \big] \big|\mathbf{s}_0 = s, \mathbf{a}_0 = a \big]\,,
+\end{split}</p>
+
+Now the variables of the inner expectation have the same joint distribution as
+those of the outer expectation, and the right hand side can be written as a
+single expectation:
+
+<p>\begin{split}
+\expectation{\pi}{\nabla Q(\mathbf{s}_1, \mathbf{a}_1) \big|\mathbf{s}_0 = s, \mathbf{a}_0 = a} =
+\mathrm{E}_{\pi} \big[
+\gamma\, \big(
+    &Q_\pi(\mathbf{s}_2, \mathbf{a}_2)
+    \nabla\log \pi(\mathbf{a}_2| \mathbf{s}_2) + \\
+    &\nabla Q_\pi(\mathbf{s}_2, \mathbf{a}_2)
+  \big)\big|\mathbf{s}_0 = s, \mathbf{a}_0 = a \big]\,,
+\end{split}</p>
+
+Substituting back into the expression for $$\nabla Q(s, a)$$ we have
+
+<p>\begin{split}
+\nabla Q_\pi(s, a)
+= \gamma\, \mathrm{E}_\pi\big[
+    &Q_\pi(\mathbf{s}_1, \mathbf{a}_1)
+    \nabla\log \pi(\mathbf{a}_1| \mathbf{s}_1) + \\
+    \gamma\, \big(
+      &Q_\pi(\mathbf{s}_2, \mathbf{a}_2)
+      \nabla\log \pi(\mathbf{a}_2| \mathbf{s}_2) +
+      \nabla Q_\pi(\mathbf{s}_2, \mathbf{a}_2)
+    \big)
+    \big|\mathbf{s}_0 = s, \mathbf{a}_0 = a
+  \big]\,,
+\end{split}</p>
+
+Therefore, repeated substitution of the identity yields the desired identity:
 <p>\begin{equation}
-\nabla \expectation{\pi}{f_\pi(\mathbf{s}_0, \mathbf{a}_0)} =
-\expectation{\pi}{\nabla f_\pi(\mathbf{s}_0, \mathbf{a}_0) +
-f_\pi(\mathbf{s}_0, \mathbf{a}_0) \nabla \log \pi(\mathbf{a}_0|\mathbf{s}_0)}\,.
+\nabla Q_\pi(s, a) = \expectation{\pi}{
+    \sum_{t = 1}^{\infty}\gamma^t\,
+    Q_\pi(\mathbf{s}_t, \mathbf{a}_t)
+    \nabla\log \pi(\mathbf{a}_t| \mathbf{s}_t)\,
+    \Big|\,\mathbf{s}_0 = s, \mathbf{a}_0 = a
+}
 \end{equation}</p>
 
-In particular, from:
+Now we can use this identity to compute the gradient of the total discounted
+reward. From:
+
 <p>\begin{equation}
 \eta(\pi) = \expectation{\pi}{Q_\pi(\mathbf{s}_0, \mathbf{a}_0)}\,,
 \end{equation}</p>
@@ -568,17 +679,41 @@ we have:
 
 <p>\begin{equation}
 \nabla \eta(\pi) = \expectation{\pi}{
-  Q_\pi(\mathbf{s}_0, \mathbf{a}_0) \nabla \log \pi(\mathbf{a}_0 | \mathbf{s}_0)
+  Q_\pi(\mathbf{s}_0, \mathbf{a}_0)
+  \nabla \log \pi(\mathbf{a}_0 | \mathbf{s}_0)
   +\nabla Q_\pi(\mathbf{s}_0, \mathbf{a}_0) }\,.
 \end{equation}</p>
 
-Now we use the Bellman equation for the action value function:
+The term $$\nabla \log \pi$$ arises from the variation of the expectation, in
+the same way as before.
+
+Substituting the identity for the gradient of the action-value function we have:
 
 <p>\begin{equation}
-Q_\pi(s, a) = \expectation{\pi}{\mathbf{r}_0 +
-\gamma\, Q_\pi(\mathbf{s}_1, \mathbf{a}_1)\big|\mathbf{s}_0
-= s, \mathbf{a}_0 = a}
+\nabla \eta(\pi) =
+\expectation{\pi}{\sum_{t = 0}^{\infty} \gamma^t
+Q_\pi(\mathbf{s}_t, \mathbf{a}_t)
+\nabla \log \pi(\mathbf{a}_t | \mathbf{s}_t)
+}\,.
 \end{equation}</p>
 
-to express the term $$\nabla Q_\pi$$ recursively in terms of itself.
+This identity is equivalent to the thesis of this section. This is because, for
+any function $$f$$ that depends on the state only:
+
+<p>\begin{split}
+\expectation{\pi}{f(\mathbf{s}) \nabla \log \pi(\mathbf{a} | \mathbf{s})}
+&= \expectation{\pi}{f(\mathbf{s}) \frac{\nabla \pi(\mathbf{a} | \mathbf{s})}
+  {\pi(\mathbf{a} | \mathbf{s})}} \\
+&= \sum_a \expectation{}{f(\mathbf{s}) \nabla \pi(a | \mathbf{s})}\\
+&= \expectation{}{f(\mathbf{s}) \nabla \sum_a \pi(a | \mathbf{s})}\\
+&= \expectation{}{f(\mathbf{s}) \nabla 1}\\
+&= 0\,.
+\end{split}</p>
+
+Consequently, we can replace in the gradient expression the action-value
+$$Q(s, t)$$ with the advantage $$A(s, t) = Q(s, t) - V(s)$$. While the two
+expression are equivalent, using the advantage function is preferred over using
+the value function because the gradient estimator has the same expectation but
+lower variance.
+
 {% include references.md %}
