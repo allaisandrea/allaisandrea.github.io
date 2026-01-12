@@ -534,14 +534,14 @@ A_\pi(\mathbf{s}_t, \mathbf{a}_t)
 }\,.
 \end{equation}</p>
 
-We start by showing a similar identity involving the action-value function:
+We start by proving a similar identity involving the action-value function:
 <p>\begin{equation}
 \nabla Q_\pi(s, a) = \expectation{\pi}{
     \sum_{t = 1}^{\infty}\gamma^t\,
     Q_\pi(\mathbf{s}_t, \mathbf{a}_t)
     \nabla\log \pi(\mathbf{a}_t| \mathbf{s}_t)\,
     \Big|\,\mathbf{s}_0 = s, \mathbf{a}_0 = a
-}
+}\,.
 \end{equation}</p>
 
 This is obtained by differentiating the Bellman equation for the action value
@@ -557,7 +557,7 @@ Q_\pi(s, a) = \expectation{\pi}{\mathbf{r}_0 +
 and expressing the term $$\nabla Q_\pi$$ recursively in terms of itself.
 
 For shortness, in the following we omit the conditioning $$\mathbf{s}_0 = s$$,
-$$\mathbf{a}_0 = a$$ when obvious, but it should be understood. We have:
+$$\mathbf{a}_0 = a$$ when obvious. We have:
 
 <p>\begin{equation}
 \nabla Q_\pi(s, a)
@@ -658,14 +658,14 @@ Substituting back into the expression for $$\nabla Q(s, a)$$ we have
   \big]\,,
 \end{split}</p>
 
-Therefore, repeated substitution of the identity yields the desired identity:
+Therefore, repeated substitution yields the desired identity:
 <p>\begin{equation}
 \nabla Q_\pi(s, a) = \expectation{\pi}{
     \sum_{t = 1}^{\infty}\gamma^t\,
     Q_\pi(\mathbf{s}_t, \mathbf{a}_t)
     \nabla\log \pi(\mathbf{a}_t| \mathbf{s}_t)\,
     \Big|\,\mathbf{s}_0 = s, \mathbf{a}_0 = a
-}
+}\,.
 \end{equation}</p>
 
 Now we can use this identity to compute the gradient of the total discounted
